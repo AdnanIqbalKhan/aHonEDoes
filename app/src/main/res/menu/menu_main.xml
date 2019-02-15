@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.meemtech.flashnotification.MainActivity">
+    <!--<item-->
+    <!--android:id="@+id/action_settings"-->
+    <!--android:orderInCategory="100"-->
+    <!--android:title="@string/action_settings"-->
+    <!--app:showAsAction="never" />-->
+
+    <!--<group-->
+    <!--android:id="@+id/gp_main"-->
+    <!--app:showAsAction="ifRoom">-->
+    <item
+        android:id="@+id/sbm_share"
+        android:icon="@android:drawable/stat_sys_headset"
+        android:title="Edit Personal Info"
+        app:showAsAction="ifRoom" />
+    <!--<item-->
+    <!--android:id="@+id/sbm_save"-->
+    <!--android:icon="@drawable/download_btn"-->
+    <!--android:title="Download"-->
+    <!--app:showAsAction="ifRoom" />-->
+    <!--</group>-->
+
+</menu>

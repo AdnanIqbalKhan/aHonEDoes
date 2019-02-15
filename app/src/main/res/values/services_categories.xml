@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="Personal_Services">
+        Alternative Health\nBeauty\nCatering\nCell/mobile\nChildcare\nCloset Specialist\nComputer\nDry Cleaners\nEvent Planning\nLessons\nLimousine Services\nPersonal Chef\nMassage\nMortgage/Debt-Reduction\nService\nNutrition\nObstetrics &amp; Gynecology\nOrganizer\nPet Care\nPilates Instructor\nPrivate Investigator\nSeamstress/Tailor\nMobile Car-Wash\nSenior care\nShoe Repair\nTanning Salons\nExercise\nWeight-Loss\nSkin &amp; Cosmetic Care\nSpa &amp; Nail\nStylist\nTraining\nVitamins\nWaxing &amp; Lash\nPersonal Trainer\nYoga Instructor</string>
+
+    <string name="Professional_Services">
+        Accountant\nActuary\nArchitect\nAuto Insurance\nHealth Insurance\nBankruptcy Lawyer\nChiropractic Care\nCredit Consult\nDefense Lawyer\nDentist\nDermatology\nDivorce Lawyer\nDivorce Lawyer\nEngineer\nFamily Medicine\nFinancial Planner\nFuneral Services\nHome Insurance\nInvestment manager\nIT consultant\nLife Insurance\nOptometry\nPediatrics\nPersonal Injury Lawyer\nPlastic &amp; Cosmetic\nTreatments\nReal estate\nTax Service\nVeterinarians\nOBGN\nEstate Planning\nMortgage\nLoans</string>
+
+    <string name="Home_Services">
+        AC and Furnish Repairs\nAir Duct Cleaning\nAppliance Repair\nArchitects &amp; Building\nDesigners\nAuto Body Work\nAuto Service\nCabinet Work\nCarpet Cleaning\nCarpet Installation\nCarpet Repair\nChimney Cleaners\nCleaning Services\nDeck &amp; Patio Builders\nDecorating Services\nDryer Vent Cleaning\nElectricians\nFencing &amp; Deck\nGarage Door Repair\nGeneral Contractors\nGlass &amp; Shower Door\nDealers\nGutter Cleaning\nGutters\nHandyman Services\nHome Design &amp; Interiors\nHome Security\nHome Siding\nHouse Painting\nInterior Designers &amp;Decorators\nKitchen &amp; Bath\nLandscaping &amp; Landscape\nDesign\nLawn Fertilization\nLawn Mowing\nLeak Detection\nLocksmith\nMaid Service\nMetal Roofing\nMold Inspection\nMold Removal\nMoving &amp; Storage\nPainting\nPest Control\nPlumbing Services\nPool &amp; Spa\nPressure Washing\nRemodeling\nRoof Repair\nRoofing\nRug Cleaning\nSeptic Tanks Systems\nSprinkler &amp; Irrigation\nSystems\nStone, Pavers &amp; Concrete\nTree Service\nTree Trimming\nUpholstery Cleaning\nWater Damage\nWater Heaters\nWindow Cleaning</string>
+
+    <!--String[] some_array = getResources().getStringArray(R.array.your_string_array)-->
+</resources>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_about"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="chefcharlesmich.smartappphonebook.VcardProgram.MainActivityVcard">
+
+
+    <ImageView
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:id="@+id/imageView2"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/smssender"
+        android:layout_weight="3.17"
+        android:layout_marginBottom="315dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:ems="10"
+        android:id="@+id/editText3"
+        android:text="SMS Sender Corp \n Dallas, Texas. \n  Using Text Messaging to get the Message Across.  \n www.SMSSenderApp.com \n
+Developer/Product/Press Inquiry:\n  Charles Kandutsch \n smssenderapp@gmail.com \n \n  About Us: \n The increase in Smartphone and tablet use has forced changes in the way individuals deliver information, services and business, or even the ability to communicate within or outside the household.  When properly designed, and rolled out, mobile apps like the ones SMS Sender Corp creates help boost user productivity, streamline activities and ultimately reduce expenses, generating more income."
+        android:textAlignment="center"
+        android:layout_weight="14.06"
+        android:textColor="#0a0deb"
+        android:layout_marginTop="190dp"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

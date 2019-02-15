@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/help_menu"
+        android:orderInCategory="100"
+        android:title="Help"
+         />
+    <item
+        android:id="@+id/share_menu"
+        android:orderInCategory="101"
+        android:title="Share"
+         />
+    <item
+        android:id="@+id/visit_menu"
+        android:orderInCategory="102"
+        android:title="Visit"
+        />
+    <item
+        android:id="@+id/gettemplate_menu"
+        android:orderInCategory="103"
+        android:title="Get Template"
+        />
+    <!--<item-->
+        <!--android:id="@+id/import_menu"-->
+        <!--android:orderInCategory="104"-->
+        <!--android:title="Import Template"-->
+        <!--/>-->
+    <item
+        android:id="@+id/export_all_menu"
+        android:orderInCategory="105"
+        android:title="Export All"
+        />
+    <item
+        android:id="@+id/import_all_menu"
+        android:orderInCategory="106"
+        android:title="Import All"
+        />
+</menu>

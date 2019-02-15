@@ -66,11 +66,13 @@
 
             </LinearLayout>
 
-            <ImageView
+            <ImageButton
+                android:id="@+id/imageBtnPerson"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:padding="5px"
+                android:scaleType="fitXY"
                 android:src="@drawable/ic_person" />
         </LinearLayout>
 
@@ -246,7 +248,7 @@
         </android.support.design.widget.TextInputLayout>
 
         <Button
-            android:id="@+id/btnDescription"
+            android:id="@+id/btnAddContact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/holo_red_light"

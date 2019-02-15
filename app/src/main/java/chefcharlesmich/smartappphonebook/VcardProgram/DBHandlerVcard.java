@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class DBHandlerVcard extends SQLiteOpenHelper {
 
 
-    private static final String DATABASE_NAME = "prompt";
+    private static final String DATABASE_NAME = "prompt1";
     private static final int DATABASE_VERSION = 1;
 
     // Contacts table name
@@ -26,12 +26,13 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
     private static final String KEY_ADDRESS = "address";
     private static final String KEY_PHONE = "phone";
     private static final String KEY_EMAIL = "email";
-    private static final String KEY_INFO = "info";
+    private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_BIRTHDAY = "bday";
     private static final String KEY_WEBSITE = "website";
     private static final String KEY_SOCIAL1 = "social1";
     private static final String KEY_SOCIAL2 = "social2";
-    private static final String KEY_BLOG = "blog";
+    private static final String KEY_WEBLINK1 = "weblink1";
+    private static final String KEY_WEBLINK2 = "weblink2";
     private static final String KEY_PICTURE_LINK = "piclink";
     private static final String KEY_VCF_PATH = "vcf_path";
 
@@ -45,9 +46,9 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         String CREATE_SMSLOGS_TABLE = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_VCARD + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," + KEY_COMPANY_NAME
                 + " TEXT," + KEY_NAME + " TEXT," + KEY_TITLE + " TEXT," + KEY_ADDRESS + " TEXT," +
-                KEY_PHONE + " TEXT," + KEY_EMAIL + " TEXT," + KEY_INFO + " TEXT," + KEY_BIRTHDAY + " TEXT," +
-                KEY_WEBSITE + " TEXT," + KEY_SOCIAL1 + " TEXT," + KEY_SOCIAL2 + " TEXT," + KEY_BLOG + " TEXT,"
-                + KEY_VCF_PATH + " TEXT," + KEY_PICTURE_LINK + " TEXT);";
+                KEY_PHONE + " TEXT," + KEY_EMAIL + " TEXT," + KEY_DESCRIPTION + " TEXT," + KEY_BIRTHDAY + " TEXT," +
+                KEY_WEBSITE + " TEXT," + KEY_SOCIAL1 + " TEXT," + KEY_SOCIAL2 + " TEXT," + KEY_WEBLINK1 + " TEXT,"
+                + KEY_WEBLINK2 + " TEXT," + KEY_VCF_PATH + " TEXT," + KEY_PICTURE_LINK + " TEXT);";
         db.execSQL(CREATE_SMSLOGS_TABLE);
     }
 
@@ -71,12 +72,13 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         values.put(KEY_ADDRESS, vCard.address);
         values.put(KEY_PHONE, vCard.phone);
         values.put(KEY_EMAIL, vCard.email);
-        values.put(KEY_INFO, vCard.info);
+        values.put(KEY_DESCRIPTION, vCard.description);
         values.put(KEY_BIRTHDAY, vCard.birthday);
         values.put(KEY_WEBSITE, vCard.website);
         values.put(KEY_SOCIAL1, vCard.social1);
         values.put(KEY_SOCIAL2, vCard.social2);
-        values.put(KEY_BLOG, vCard.blog);
+        values.put(KEY_WEBLINK1, vCard.weblink1);
+        values.put(KEY_WEBLINK2, vCard.weblink2);
         values.put(KEY_PICTURE_LINK, vCard.pic_link);
         values.put(KEY_VCF_PATH, vCard.pic_link);
 
@@ -87,18 +89,26 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         return id;
     }
 
+    public boolean deleteVCardByID(int id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_VCARD, KEY_ID + "=" + id, null) > 0;
+
+    }
+
     public VCardMide getVCardById(int id) {
         String selectQuery = "SELECT * FROM " + TABLE_VCARD
                 + " WHERE " + KEY_ID + "=" + id + ";";
-
-
         try {
             SQLiteDatabase db = this.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
             while (cursor.moveToNext()) {
-                return new VCardMide(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)
-                        , cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9)
-                        , cursor.getString(10), cursor.getString(11), cursor.getString(12), cursor.getString(14), cursor.getString(13));
+                return new VCardMide(
+                        cursor.getInt(0), cursor.getString(1), cursor.getString(2),
+                        cursor.getString(3), cursor.getString(4), cursor.getString(5),
+                        cursor.getString(6), cursor.getString(7), cursor.getString(8),
+                        cursor.getString(9), cursor.getString(10), cursor.getString(11),
+                        cursor.getString(12), cursor.getString(13), cursor.getString(14)
+                        , cursor.getString(15));
             }
             db.close();
 
@@ -110,7 +120,7 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
 
     public ArrayList<VCardMide> getAllVcards() {
         String selectQuery = "SELECT * FROM " + TABLE_VCARD;
-                /*+ " WHERE " + KEY_COMPANY_NAME + "='" + icomingNumber + "';";*/
+        /*+ " WHERE " + KEY_COMPANY_NAME + "='" + icomingNumber + "';";*/
 
         ArrayList<VCardMide> mList = new ArrayList<VCardMide>();
 
@@ -118,9 +128,13 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
             SQLiteDatabase db = this.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
             while (cursor.moveToNext()) {
-                mList.add(new VCardMide(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)
-                        , cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9)
-                        , cursor.getString(10), cursor.getString(11), cursor.getString(12), cursor.getString(14), cursor.getString(13)));
+                mList.add(new VCardMide(
+                        cursor.getInt(0), cursor.getString(1), cursor.getString(2),
+                        cursor.getString(3), cursor.getString(4), cursor.getString(5),
+                        cursor.getString(6), cursor.getString(7), cursor.getString(8),
+                        cursor.getString(9), cursor.getString(10), cursor.getString(11),
+                        cursor.getString(12), cursor.getString(13), cursor.getString(14)
+                        , cursor.getString(15)));
             }
             db.close();
         } catch (Exception e) {
@@ -142,13 +156,15 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         values.put(KEY_ADDRESS, vCard.address);
         values.put(KEY_PHONE, vCard.phone);
         values.put(KEY_EMAIL, vCard.email);
-        values.put(KEY_INFO, vCard.info);
+        values.put(KEY_DESCRIPTION, vCard.description);
         values.put(KEY_BIRTHDAY, vCard.birthday);
         values.put(KEY_WEBSITE, vCard.website);
         values.put(KEY_SOCIAL1, vCard.social1);
         values.put(KEY_SOCIAL2, vCard.social2);
-        values.put(KEY_BLOG, vCard.blog);
+        values.put(KEY_WEBLINK1, vCard.weblink1);
+        values.put(KEY_WEBLINK2, vCard.weblink2);
         values.put(KEY_PICTURE_LINK, vCard.pic_link);
+        values.put(KEY_VCF_PATH, vCard.pic_link);
 
 
         // Update Row

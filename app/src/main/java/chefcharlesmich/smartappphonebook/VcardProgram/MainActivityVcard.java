@@ -1,6 +1,8 @@
 package chefcharlesmich.smartappphonebook.VcardProgram;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -9,12 +11,17 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,14 +35,18 @@ import chefcharlesmich.smartappphonebook.R;
 
 public class MainActivityVcard extends AppCompatActivity {
 
+    int MAX_CONTACT_LIMIT = 6;   // 0 means unlimited
     String[] permissions = new String[]{
             Manifest.permission.SEND_SMS};
 
-    Button add1, add2, add3, add4, add5, add6,contactsBtnToolbar;
+    Button contactsBtnToolbar;
+    ImageButton addContact;
     DBHandlerVcard mdb;
-
+    RecyclerView contactList;
     ArrayList<VCardMide> mList;
     int size = 0;
+    private LinearLayoutManager layoutManager;
+    private MyAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,17 +73,24 @@ public class MainActivityVcard extends AppCompatActivity {
 //            startMainActivity();
         }
 
-        add1 = (Button) findViewById(R.id.button3);
-        add2 = (Button) findViewById(R.id.button);
-        add3 = (Button) findViewById(R.id.button5);
-        add4 = (Button) findViewById(R.id.button7);
-        add5 = (Button) findViewById(R.id.button9);
-        add6 = (Button) findViewById(R.id.btn_add_share_5);
+        contactList = findViewById(R.id.recycler_view_contact_list);
         contactsBtnToolbar = (Button) findViewById(R.id.contacts_btn_id);
+        addContact = findViewById(R.id.button_add_contact);
         mdb = new DBHandlerVcard(this);
 
-        mList = mdb.getAllVcards();
-        size = mList.size();
+        addContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mList.size() < MAX_CONTACT_LIMIT || MAX_CONTACT_LIMIT == 0) {
+                    mList.add(new VCardMide(-1, "", "", "",
+                            "", "", "", "", "", "", "",
+                            "", "", "", "", ""));
+                                        updateUI(true);
+                } else {
+                    Toast.makeText(MainActivityVcard.this, "Max Contacts Allowed " + MAX_CONTACT_LIMIT, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         contactsBtnToolbar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,128 +99,41 @@ public class MainActivityVcard extends AppCompatActivity {
                 finish();
             }
         });
-        add1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size == 0)
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class));
-                else
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", mList.get(0).id));
-            }
-        });
-        add2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size < 2)
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class));
-                else
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", mList.get(1).id));
-            }
-        });
-        add3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size < 3)
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class));
-                else
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", mList.get(2).id));
-            }
-        });
-        add4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size < 4)
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class));
-                else
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", mList.get(3).id));
-            }
-        });
-        add5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size < 5)
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class));
-                else
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", mList.get(4).id));
-            }
-        });
-        add6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size < 6)
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class));
-                else
-                    startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", mList.get(5).id));
-            }
-        });
-        ((Button) findViewById(R.id.button4)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size >= 1)
-                    sendVcard(mList.get(0));
-//                Toast.makeText(MainActivityVcard.this, "Share options will be displayed", Toast.LENGTH_SHORT).show();
-            }
-        });
-        ((Button) findViewById(R.id.button2)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size >= 2)
-                    sendVcard(mList.get(1));
-//                Toast.makeText(MainActivityVcard.this, "Share options will be displayed", Toast.LENGTH_SHORT).show();
-            }
-        });
-        ((Button) findViewById(R.id.button6)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size >= 3)
-                    sendVcard(mList.get(2));
-//                Toast.makeText(MainActivityVcard.this, "Share options will be displayed", Toast.LENGTH_SHORT).show();
-            }
-        });
-        ((Button) findViewById(R.id.button8)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size >= 4)
-                    sendVcard(mList.get(3));
-            }
-        });
-        ((Button) findViewById(R.id.button10)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size >= 5)
-                    sendVcard(mList.get(4));
-            }
-        });
-        ((Button) findViewById(R.id.btn_share_5)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (size >= 6)
-                    sendVcard(mList.get(5));
-            }
-        });
-
-        ((Button) findViewById(R.id.btn_help)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String url = "http://www.smssenderapp.com/smsbusinessteamapphelp/";
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-            }
-        });
-        ((Button) findViewById(R.id.btn_share)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String message = "Get the app at www.smssenderapp.com/SMSBusinessTeam/";
-
-                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-                smsIntent.setType("vnd.android-dir/mms-sms");
-                smsIntent.putExtra("sms_body", message);
-                startActivity(smsIntent);
 
 
-//                SmsManager smsManager = SmsManager.getDefault();
-//                smsManager.sendTextMessage("0000", null, message, null, null);
-            }
-        });
+        // use a linear layout manager
+        layoutManager = new LinearLayoutManager(this);
+        contactList.setLayoutManager(layoutManager);
+
+        updateUI(false);
+
+//        ((Button) findViewById(R.id.btn_help)).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String url = "http://www.smssenderapp.com/smsbusinessteamapphelp/";
+//                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+//            }
+//        });
+//        ((Button) findViewById(R.id.btn_share)).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String message = "Get the app at www.smssenderapp.com/SMSBusinessTeam/";
+//
+//                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+//                smsIntent.setType("vnd.android-dir/mms-sms");
+//                smsIntent.putExtra("sms_body", message);
+//                startActivity(smsIntent);
+//
+//
+////                SmsManager smsManager = SmsManager.getDefault();
+////                smsManager.sendTextMessage("0000", null, message, null, null);
+//            }
+//        });
+    }
+
+    void editVCard(int id) {
+        startActivity(new Intent(MainActivityVcard.this, AboutYouActivity.class).putExtra("vcardidpassed", id));
+        finish();
     }
 
     void sendVcard(VCardMide mvCard) {
@@ -215,19 +146,19 @@ public class MainActivityVcard extends AppCompatActivity {
             fw.write("BEGIN:VCARD\r\n");
             fw.write("VERSION:3.0\r\n");
 
-            String name = mvCard.name;// = ((EditText) v.findViewById(R.id.editText5)).getText().toString();
-            String phone = mvCard.phone;// = ((EditText) v.findViewById(R.id.editText6)).getText().toString();
-            String email = mvCard.email;// = ((EditText) v.findViewById(R.id.editText7)).getText().toString();
-            String address = mvCard.address;// = ((EditText) v.findViewById(R.id.editText8)).getText().toString();
-            String bday = mvCard.birthday;// = ((EditText) v.findViewById(R.id.editText9)).getText().toString();
-            String org = mvCard.company_name;// = ((EditText) v.findViewById(R.id.editText10)).getText().toString();
-            String title = mvCard.title;// = ((EditText) v.findViewById(R.id.editText10)).getText().toString();
-            String website = mvCard.website;
-            String note = mvCard.info;
-            String social1 = mvCard.social1;
-            String social2 = mvCard.social2;
-            String blog = mvCard.blog;
-            String pic_link = mvCard.pic_link;
+//            String name = mvCard.name;// = ((EditText) v.findViewById(R.id.editText5)).getText().toString();
+//            String phone = mvCard.phone;// = ((EditText) v.findViewById(R.id.editText6)).getText().toString();
+//            String email = mvCard.email;// = ((EditText) v.findViewById(R.id.editText7)).getText().toString();
+//            String address = mvCard.address;// = ((EditText) v.findViewById(R.id.editText8)).getText().toString();
+//            String bday = mvCard.birthday;// = ((EditText) v.findViewById(R.id.editText9)).getText().toString();
+//            String org = mvCard.company_name;// = ((EditText) v.findViewById(R.id.editText10)).getText().toString();
+//            String title = mvCard.title;// = ((EditText) v.findViewById(R.id.editText10)).getText().toString();
+//            String website = mvCard.website;
+//            String note = mvCard.info;
+//            String social1 = mvCard.social1;
+//            String social2 = mvCard.social2;
+//            String blog = mvCard.blog;
+//            String pic_link = mvCard.pic_link;
 
 //            fw.write("N:" + name + ";" + name + "\r\n");
 //            fw.write("FN:" + name + " " + name + "\r\n");
@@ -249,23 +180,23 @@ public class MainActivityVcard extends AppCompatActivity {
             fw.write("EMAIL;" + email + "\r\n");
             fw.write("BDAY:" + bday + "\r\n");*/
 
-            fw.write("N:" + name + ";\r\n");
-            fw.write("FN:" + name + " \r\n");
-            fw.write("ORG:" + org + "\r\n");
-            fw.write("TITLE:" + title + "\r\n");
-            fw.write("TEL;TYPE=WORK,VOICE:" + phone + "\r\n");
-            fw.write("ADR;TYPE=WORK:;;" + address + "\r\n");
-            fw.write("NOTE:" + note + "\r\n");
-            fw.write("item1.URL:" + website + "\r\n");
-            fw.write("item2.URL:" + social1 + "\r\n");
-            fw.write("item3.URL:" + social2 + "\r\n");
-            fw.write("item4.URL:" + blog + "\r\n");
-            fw.write("item5.URL:" + pic_link + "\r\n");
-//            fw.write("PHOTO;VALUE=URI;TYPE=JPG:http://www.chefcharlesmichael.com/chefpic" + "\r\n");
-
-            fw.write("VCF_PATH=" + mvCard.vcf_path + "\r\n ");
-            fw.write("EMAIL;TYPE=PREF,INTERNET:" + email + "\r\n");
-            fw.write("BDAY:" + bday + "\r\n");
+//            fw.write("N:" + name + ";\r\n");
+//            fw.write("FN:" + name + " \r\n");
+//            fw.write("ORG:" + org + "\r\n");
+//            fw.write("TITLE:" + title + "\r\n");
+//            fw.write("TEL;TYPE=WORK,VOICE:" + phone + "\r\n");
+//            fw.write("ADR;TYPE=WORK:;;" + address + "\r\n");
+//            fw.write("NOTE:" + note + "\r\n");
+//            fw.write("item1.URL:" + website + "\r\n");
+//            fw.write("item2.URL:" + social1 + "\r\n");
+//            fw.write("item3.URL:" + social2 + "\r\n");
+//            fw.write("item4.URL:" + blog + "\r\n");
+//            fw.write("item5.URL:" + pic_link + "\r\n");
+////            fw.write("PHOTO;VALUE=URI;TYPE=JPG:http://www.chefcharlesmichael.com/chefpic" + "\r\n");
+//
+//            fw.write("VCF_PATH=" + mvCard.vcf_path + "\r\n ");
+//            fw.write("EMAIL;TYPE=PREF,INTERNET:" + email + "\r\n");
+//            fw.write("BDAY:" + bday + "\r\n");
 
             /*fw.write("URL;TYPE=PREF:" + website + "\r\n ");
 
@@ -371,102 +302,119 @@ VCF_PATH = "vcf_path";
         }
     }
 
-    void updateUI() {
-        mList = mdb.getAllVcards();
-        size = mList.size();
-
-        if (size == 1) {
-            ((TextView) findViewById(R.id.textView3)).setText("Company: " + mList.get(0).company_name);
-            ((TextView) findViewById(R.id.textView4)).setText("Name: " + mList.get(0).name);
-            ((TextView) findViewById(R.id.tv_phone0)).setText("Phone: " + mList.get(0).phone);
-
-        } else if (size == 2) {
-            ((TextView) findViewById(R.id.textView3)).setText("Company: " + mList.get(0).company_name);
-            ((TextView) findViewById(R.id.textView4)).setText("Name: " + mList.get(0).name);
-            ((TextView) findViewById(R.id.tv_phone0)).setText("Phone: " + mList.get(0).phone);
-
-            ((TextView) findViewById(R.id.textView5)).setText("Company: " + mList.get(1).company_name);
-            ((TextView) findViewById(R.id.textView7)).setText("Name: " + mList.get(1).name);
-            ((TextView) findViewById(R.id.tv_phone1)).setText("Phone: " + mList.get(1).phone);
-        } else if (size == 3) {
-            ((TextView) findViewById(R.id.textView3)).setText("Company: " + mList.get(0).company_name);
-            ((TextView) findViewById(R.id.textView4)).setText("Name: " + mList.get(0).name);
-            ((TextView) findViewById(R.id.tv_phone0)).setText("Phone: " + mList.get(0).phone);
-
-            ((TextView) findViewById(R.id.textView5)).setText("Company: " + mList.get(1).company_name);
-            ((TextView) findViewById(R.id.textView7)).setText("Name: " + mList.get(1).name);
-            ((TextView) findViewById(R.id.tv_phone1)).setText("Phone: " + mList.get(1).phone);
-
-            ((TextView) findViewById(R.id.textView8)).setText("Company: " + mList.get(2).company_name);
-            ((TextView) findViewById(R.id.textView9)).setText("Name: " + mList.get(2).name);
-            ((TextView) findViewById(R.id.tv_phone2)).setText("Phone: " + mList.get(2).phone);
-        } else if (size == 4) {
-            ((TextView) findViewById(R.id.textView3)).setText("Company: " + mList.get(0).company_name);
-            ((TextView) findViewById(R.id.textView4)).setText("Name: " + mList.get(0).name);
-            ((TextView) findViewById(R.id.tv_phone0)).setText("Phone: " + mList.get(0).phone);
-
-            ((TextView) findViewById(R.id.textView5)).setText("Company: " + mList.get(1).company_name);
-            ((TextView) findViewById(R.id.textView7)).setText("Name: " + mList.get(1).name);
-            ((TextView) findViewById(R.id.tv_phone1)).setText("Phone: " + mList.get(1).phone);
-
-            ((TextView) findViewById(R.id.textView8)).setText("Company: " + mList.get(2).company_name);
-            ((TextView) findViewById(R.id.textView9)).setText("Name: " + mList.get(2).name);
-            ((TextView) findViewById(R.id.tv_phone2)).setText("Phone: " + mList.get(2).phone);
-
-            ((TextView) findViewById(R.id.textView10)).setText("Company: " + mList.get(3).company_name);
-            ((TextView) findViewById(R.id.textView11)).setText("Name: " + mList.get(3).name);
-            ((TextView) findViewById(R.id.tv_phone3)).setText("Phone: " + mList.get(3).phone);
-        } else if (size == 5) {
-            ((TextView) findViewById(R.id.textView3)).setText("Company: " + mList.get(0).company_name);
-            ((TextView) findViewById(R.id.textView4)).setText("Name: " + mList.get(0).name);
-            ((TextView) findViewById(R.id.tv_phone0)).setText("Phone: " + mList.get(0).phone);
-
-            ((TextView) findViewById(R.id.textView5)).setText("Company: " + mList.get(1).company_name);
-            ((TextView) findViewById(R.id.textView7)).setText("Name: " + mList.get(1).name);
-            ((TextView) findViewById(R.id.tv_phone1)).setText("Phone: " + mList.get(1).phone);
-
-            ((TextView) findViewById(R.id.textView8)).setText("Company: " + mList.get(2).company_name);
-            ((TextView) findViewById(R.id.textView9)).setText("Name: " + mList.get(2).name);
-            ((TextView) findViewById(R.id.tv_phone2)).setText("Phone: " + mList.get(2).phone);
-
-            ((TextView) findViewById(R.id.textView10)).setText("Company: " + mList.get(3).company_name);
-            ((TextView) findViewById(R.id.textView11)).setText("Name: " + mList.get(3).name);
-            ((TextView) findViewById(R.id.tv_phone3)).setText("Phone: " + mList.get(3).phone);
-
-            ((TextView) findViewById(R.id.textView12)).setText("Company: " + mList.get(4).company_name);
-            ((TextView) findViewById(R.id.textView13)).setText("Name: " + mList.get(4).name);
-            ((TextView) findViewById(R.id.tv_phone4)).setText("Phone: " + mList.get(4).phone);
-        } else if (size == 6) {
-            ((TextView) findViewById(R.id.textView3)).setText("Company: " + mList.get(0).company_name);
-            ((TextView) findViewById(R.id.textView4)).setText("Name: " + mList.get(0).name);
-            ((TextView) findViewById(R.id.tv_phone0)).setText("Phone: " + mList.get(0).phone);
-
-            ((TextView) findViewById(R.id.textView5)).setText("Company: " + mList.get(1).company_name);
-            ((TextView) findViewById(R.id.textView7)).setText("Name: " + mList.get(1).name);
-            ((TextView) findViewById(R.id.tv_phone1)).setText("Phone: " + mList.get(1).phone);
-
-            ((TextView) findViewById(R.id.textView8)).setText("Company: " + mList.get(2).company_name);
-            ((TextView) findViewById(R.id.textView9)).setText("Name: " + mList.get(2).name);
-            ((TextView) findViewById(R.id.tv_phone2)).setText("Phone: " + mList.get(2).phone);
-
-            ((TextView) findViewById(R.id.textView10)).setText("Company: " + mList.get(3).company_name);
-            ((TextView) findViewById(R.id.textView11)).setText("Name: " + mList.get(3).name);
-            ((TextView) findViewById(R.id.tv_phone3)).setText("Phone: " + mList.get(3).phone);
-
-            ((TextView) findViewById(R.id.textView12)).setText("Company: " + mList.get(4).company_name);
-            ((TextView) findViewById(R.id.textView13)).setText("Name: " + mList.get(4).name);
-            ((TextView) findViewById(R.id.tv_phone4)).setText("Phone: " + mList.get(4).phone);
-
-            ((TextView) findViewById(R.id.textView14)).setText("Company: " + mList.get(5).company_name);
-            ((TextView) findViewById(R.id.textView15)).setText("Name: " + mList.get(5).name);
-            ((TextView) findViewById(R.id.tv_phone5)).setText("Phone: " + mList.get(5).phone);
+    void updateUI(boolean add) {
+        if (!add) {
+            mList = mdb.getAllVcards();
         }
+        size = mList.size();
+        mAdapter = new MyAdapter(mList);
+        contactList.setAdapter(mAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        updateUI();
+        updateUI(true);
 //        startActivity(new Intent(this, MainActivityVcard.class));
+    }
+
+
+    class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
+        private ArrayList<VCardMide> mDataset;
+
+        // Provide a reference to the views for each data item
+        // Complex data items may need more than one view per item, and
+        // you provide access to all the views for a data item in a view holder
+        public class MyViewHolder extends RecyclerView.ViewHolder {
+            // each data item is just a string in this case
+            public View View;
+
+            public MyViewHolder(View v) {
+                super(v);
+                View = v;
+            }
+
+            public void bind(final VCardMide card) {
+                TextView companyName = View.findViewById(R.id.textViewCompany);
+                TextView personName = View.findViewById(R.id.textViewName);
+                TextView phoneNumber = View.findViewById(R.id.textViewPhone);
+
+                Button edit = View.findViewById(R.id.buttonListEdit);
+                Button share = View.findViewById(R.id.buttonListShare);
+
+                companyName.setText(card.company_name);
+                personName.setText(card.name);
+                phoneNumber.setText(card.phone);
+
+                edit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(android.view.View view) {
+                        editVCard(card.id);
+                    }
+                });
+
+                share.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(android.view.View view) {
+                        sendVcard(card);
+                        Toast.makeText(View.getContext(), "Share options will be displayed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                View.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(android.view.View view) {
+                        new AlertDialog.Builder(View.getContext())
+                                .setTitle("Delete Contact")
+                                .setMessage("Do you really want to delete contact with name: " + card.name + "?")
+                                .setIcon(R.drawable.ic_warning_black_24dp)
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        if (mdb.deleteVCardByID(card.id)) {
+                                            Toast.makeText(View.getContext(), "Contact deleted", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(View.getContext(), "Error Occur", Toast.LENGTH_SHORT).show();
+                                        }
+                                        updateUI(false);
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, null).show();
+                        return false;
+                    }
+                });
+            }
+        }
+
+        // Provide a suitable constructor (depends on the kind of dataset)
+        public MyAdapter(ArrayList<VCardMide> myDataset) {
+            mDataset = myDataset;
+        }
+
+        // Create new views (invoked by the layout manager)
+        @Override
+        public MyAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
+                                                         int viewType) {
+            // create a new view
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.vcard_list_single_layout, parent, false);
+
+            MyViewHolder vh = new MyViewHolder(v);
+            return vh;
+        }
+
+        // Replace the contents of a view (invoked by the layout manager)
+        @Override
+        public void onBindViewHolder(MyViewHolder holder, int position) {
+            // - get element from your dataset at this position
+            // - replace the contents of the view with that element
+            holder.bind(mDataset.get(position));
+
+        }
+
+        // Return the size of your dataset (invoked by the layout manager)
+        @Override
+        public int getItemCount() {
+            return mDataset.size();
+        }
     }
 }

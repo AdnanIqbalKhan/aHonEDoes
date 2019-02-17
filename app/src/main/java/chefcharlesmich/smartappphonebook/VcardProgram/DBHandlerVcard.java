@@ -5,15 +5,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class DBHandlerVcard extends SQLiteOpenHelper {
 
 
-    private static final String DATABASE_NAME = "prompt1";
-    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "prompt";
+    private static final int DATABASE_VERSION = 2;
 
     // Contacts table name
     private static final String TABLE_VCARD = "vcard";
@@ -29,12 +32,14 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
     private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_BIRTHDAY = "bday";
     private static final String KEY_WEBSITE = "website";
+    private static final String KEY_INDUSTRY = "industry";
     private static final String KEY_SOCIAL1 = "social1";
     private static final String KEY_SOCIAL2 = "social2";
     private static final String KEY_WEBLINK1 = "weblink1";
     private static final String KEY_WEBLINK2 = "weblink2";
     private static final String KEY_PICTURE_LINK = "piclink";
     private static final String KEY_VCF_PATH = "vcf_path";
+    private static final String KEY_PICTURE_BLOB = "picture_blob";
 
     public DBHandlerVcard(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -42,13 +47,14 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VCARD);
         String CREATE_SMSLOGS_TABLE = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_VCARD + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," + KEY_COMPANY_NAME
                 + " TEXT," + KEY_NAME + " TEXT," + KEY_TITLE + " TEXT," + KEY_ADDRESS + " TEXT," +
                 KEY_PHONE + " TEXT," + KEY_EMAIL + " TEXT," + KEY_DESCRIPTION + " TEXT," + KEY_BIRTHDAY + " TEXT," +
-                KEY_WEBSITE + " TEXT," + KEY_SOCIAL1 + " TEXT," + KEY_SOCIAL2 + " TEXT," + KEY_WEBLINK1 + " TEXT,"
-                + KEY_WEBLINK2 + " TEXT," + KEY_VCF_PATH + " TEXT," + KEY_PICTURE_LINK + " TEXT);";
+                KEY_WEBSITE + " TEXT," + KEY_INDUSTRY + " TEXT," + " TEXT," + KEY_SOCIAL1 + " TEXT," + KEY_SOCIAL2 + " TEXT," +
+                KEY_WEBLINK1 + " TEXT," + KEY_WEBLINK2 + " TEXT," + KEY_VCF_PATH + " TEXT," + KEY_PICTURE_LINK + " TEXT, " +
+                KEY_PICTURE_BLOB + " BLOB);";
         db.execSQL(CREATE_SMSLOGS_TABLE);
     }
 
@@ -75,12 +81,14 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         values.put(KEY_DESCRIPTION, vCard.description);
         values.put(KEY_BIRTHDAY, vCard.birthday);
         values.put(KEY_WEBSITE, vCard.website);
+        values.put(KEY_INDUSTRY, vCard.industry);
         values.put(KEY_SOCIAL1, vCard.social1);
         values.put(KEY_SOCIAL2, vCard.social2);
         values.put(KEY_WEBLINK1, vCard.weblink1);
         values.put(KEY_WEBLINK2, vCard.weblink2);
         values.put(KEY_PICTURE_LINK, vCard.pic_link);
         values.put(KEY_VCF_PATH, vCard.pic_link);
+        values.put(KEY_PICTURE_BLOB, DbBitmapUtility.getBytes(vCard.picture));
 
         // Inserting Row
         long id = db.insert(TABLE_VCARD, null, values);
@@ -89,7 +97,7 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         return id;
     }
 
-    public boolean deleteVCardByID(int id){
+    public boolean deleteVCardByID(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_VCARD, KEY_ID + "=" + id, null) > 0;
 
@@ -108,7 +116,7 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
                         cursor.getString(6), cursor.getString(7), cursor.getString(8),
                         cursor.getString(9), cursor.getString(10), cursor.getString(11),
                         cursor.getString(12), cursor.getString(13), cursor.getString(14)
-                        , cursor.getString(15));
+                        , cursor.getString(15), cursor.getString(16), DbBitmapUtility.getImage(cursor.getBlob(17)));
             }
             db.close();
 
@@ -134,7 +142,7 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
                         cursor.getString(6), cursor.getString(7), cursor.getString(8),
                         cursor.getString(9), cursor.getString(10), cursor.getString(11),
                         cursor.getString(12), cursor.getString(13), cursor.getString(14)
-                        , cursor.getString(15)));
+                        , cursor.getString(15), cursor.getString(16), DbBitmapUtility.getImage(cursor.getBlob(17))));
             }
             db.close();
         } catch (Exception e) {
@@ -165,7 +173,7 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         values.put(KEY_WEBLINK2, vCard.weblink2);
         values.put(KEY_PICTURE_LINK, vCard.pic_link);
         values.put(KEY_VCF_PATH, vCard.pic_link);
-
+        values.put(KEY_PICTURE_BLOB, DbBitmapUtility.getBytes(vCard.picture));
 
         // Update Row
         int status = db.update(TABLE_VCARD, values, where, whereArgs);
@@ -229,4 +237,29 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         db.delete(TABLE_PROJ_MESSAGES, where, whereArgs);
         db.close(); // Closing database connection
     }*/
+}
+
+class DbBitmapUtility {
+
+    // convert from bitmap to byte array
+    public static byte[] getBytes(Bitmap bitmap) {
+        if (bitmap == null) {
+            Log.d("T1", "getBytes: bitmap is null");
+            return null;
+        }
+
+        Log.d("T1", "getBytes: bitmap is not null");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        return stream.toByteArray();
+    }
+
+    // convert from byte array to bitmap
+    public static Bitmap getImage(byte[] image) {
+        if(image ==null){
+            Log.d("T1", "getImage: bytes is null");
+        }
+        Log.d("T1", "getImage: bytes is not null");
+        return BitmapFactory.decodeByteArray(image, 0, image.length);
+    }
 }

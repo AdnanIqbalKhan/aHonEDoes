@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import chefcharlesmich.smartappphonebook.CustomAdapter;
 import chefcharlesmich.smartappphonebook.DBHandler;
@@ -41,7 +42,10 @@ import chefcharlesmich.smartappphonebook.Models.Category;
 import chefcharlesmich.smartappphonebook.Models.Contact;
 import chefcharlesmich.smartappphonebook.Models.Group;
 import chefcharlesmich.smartappphonebook.R;
+import chefcharlesmich.smartappphonebook.VcardProgram.AboutYouActivity;
+import chefcharlesmich.smartappphonebook.VcardProgram.DBHandlerVcard;
 import chefcharlesmich.smartappphonebook.VcardProgram.MainActivityVcard;
+import chefcharlesmich.smartappphonebook.VcardProgram.VCardMide;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.VCardVersion;
@@ -53,15 +57,15 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String KEY_EXTRA_CAT_ID = "cat_id";
     public static final String KEY_EXTRA_CAT_NAME = "cat_name";
-    private static final String TAG ="MainActivity" ;
+    private static final String TAG = "MainActivity";
     private static final int PERMISSIONS_CODE = 1;
-    public static final String KEY_EXTRA_CONTACT_POSITION ="contact_position" ;
-    public static final String KEY_EXTRA_CONTACT_NUMBER ="contact_number" ;
-    public static final String KEY_EXTRA_CONTACT_EMAIL ="contact_email" ;
+    public static final String KEY_EXTRA_CONTACT_POSITION = "contact_position";
+    public static final String KEY_EXTRA_CONTACT_NUMBER = "contact_number";
+    public static final String KEY_EXTRA_CONTACT_EMAIL = "contact_email";
     public static final String KEY_EXTRA_CONTACT_ADDRESS = "contact_address";
     public static final String KEY_EXTRA_CONTACT_WEBISTE = "contact_website";
     private ImageView back, next;
-    private TextView service_tag,type_textview;
+    private TextView service_tag, type_textview;
     private Button group_add, category_add, promote_btn_toolbar;
 
     ListView list;
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     public static ArrayList<Group> _groups;
 
     private static final int REQUEST_CODE_PICK_CONTACTS = 1;
-    private Uri uriContact;
+    public Uri uriContact;
     private String contactID;     // contacts unique ID
 
     int position;
@@ -121,11 +125,11 @@ public class MainActivity extends AppCompatActivity {
             for (String aData : data) mdb.addCategory(_groups.get(2).id, aData);
 
             Log.d("databasedata", "Size is = " + _groups.size() + "");
-            Log.d(TAG, "onCreate: mdb.getGroupTableCount()="+ mdb.getGroupTableCount());
-            Log.d(TAG, "onCreate: mdb.getCategoriesTableCount()="+ mdb.getCategoriesTableCount());
-            Log.d(TAG, "onCreate: mdb.getCategoriesContactTableCount()="+ mdb.getCategoriesContactTableCount());
+            Log.d(TAG, "onCreate: mdb.getGroupTableCount()=" + mdb.getGroupTableCount());
+            Log.d(TAG, "onCreate: mdb.getCategoriesTableCount()=" + mdb.getCategoriesTableCount());
+            Log.d(TAG, "onCreate: mdb.getCategoriesContactTableCount()=" + mdb.getCategoriesContactTableCount());
 
-            startActivity(new Intent(MainActivity.this,InfoActivity.class));
+            startActivity(new Intent(MainActivity.this, InfoActivity.class));
 
         } else {
             _groups = mdb.getAllGroups();
@@ -135,15 +139,15 @@ public class MainActivity extends AppCompatActivity {
                 service_tags[i] = _groups.get(i).name;
             Log.d("databasedata", "group size is = " + _groups.size() + "");
             Log.d("databasedata", " _group.tostig result = >  " + _groups.toString());
-            Log.d(TAG, "onCreate: mdb.getGroupTableCount()="+ mdb.getGroupTableCount());
-            Log.d(TAG, "onCreate: mdb.getCategoriesTableCount()="+ mdb.getCategoriesTableCount());
-            Log.d(TAG, "onCreate: mdb.getCategoriesContactTableCount()="+ mdb.getCategoriesContactTableCount());
+            Log.d(TAG, "onCreate: mdb.getGroupTableCount()=" + mdb.getGroupTableCount());
+            Log.d(TAG, "onCreate: mdb.getCategoriesTableCount()=" + mdb.getCategoriesTableCount());
+            Log.d(TAG, "onCreate: mdb.getCategoriesContactTableCount()=" + mdb.getCategoriesContactTableCount());
 
         }
 
         ArrayList<Contact> allContactList = mdb.getAllContacts();
 
-        Log.d(TAG, "onCreate: allContactList.size:" +allContactList.size());
+        Log.d(TAG, "onCreate: allContactList.size:" + allContactList.size());
         for (int i = 0; i < allContactList.size(); i++) {
             Contact contact = allContactList.get(i);
             Log.d(TAG, "onCreate: DB Contacts:" + " Category_id= " + contact.category_id + " Group_id= " + contact.group_id +
@@ -156,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setCustomAdapter(){
+    private void setCustomAdapter() {
         CustomListView = this;
         /******** Take some data in Arraylist ( CustomListViewValuesArr ) ***********/
         setListData(_groups.get(current_group_count).id);    // first time current_group_data == 0
@@ -166,9 +170,10 @@ public class MainActivity extends AppCompatActivity {
 
         /**************** Create Custom Adapter *********/
 //        Category tempValues = (Category) CustomListViewValuesArr.get(position);
-        adapter = new CustomAdapter(CustomListView, CustomListViewValuesArr, res,mdb,this );
+        adapter = new CustomAdapter(CustomListView, CustomListViewValuesArr, res, mdb, this);
         list.setAdapter(adapter);
     }
+
     /******
      * Function to set data in ArrayList
      *************/
@@ -184,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
      ****************/
     public void onItemClick(int mPosition) {
         Category tempValues = (Category) CustomListViewValuesArr.get(mPosition);
-        position =mPosition;
+        position = mPosition;
 
         Log.d(TAG, "onItemClick: called from CustomAdapter");
 
@@ -201,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         promote_btn_toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,MainActivityVcard.class));
+                startActivity(new Intent(MainActivity.this, MainActivityVcard.class));
                 finish();
             }
         });
@@ -209,13 +214,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(current_group_count > 0)
-                {
-                    current_group_count --;
+                if (current_group_count > 0) {
+                    current_group_count--;
                     setListData(_groups.get(current_group_count).id);
                     updateServiceTag(service_tags[current_group_count]);
                     updateListAdapter();
-                    Log.d(TAG, "onClick: current_group_count="+current_group_count);
+                    Log.d(TAG, "onClick: current_group_count=" + current_group_count);
                 }
 
 
@@ -225,13 +229,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(current_group_count < mdb.getGroupTableCount()-1)
-                {
-                    current_group_count ++;
+                if (current_group_count < mdb.getGroupTableCount() - 1) {
+                    current_group_count++;
                     setListData(_groups.get(current_group_count).id);
                     updateServiceTag(service_tags[current_group_count]);
                     updateListAdapter();
-                    Log.d(TAG, "onClick: current_group_count="+current_group_count);
+                    Log.d(TAG, "onClick: current_group_count=" + current_group_count);
 
                 }
 
@@ -252,18 +255,17 @@ public class MainActivity extends AppCompatActivity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-                Log.v("clicked","pos: " + pos);
-                position=pos;
+                Log.v("clicked", "pos: " + pos);
+                position = pos;
                 Category temp_cat = CustomListViewValuesArr.get(pos);
                 retreiveContactIDfromDB(temp_cat);
-                if(!mdb.getCategoryContact(temp_cat.id).equals("")) {
+                if (!mdb.getCategoryContact(temp_cat.id).equals("")) {
                     Intent mintent = new Intent(MainActivity.this, ContactActivity.class);
                     mintent.putExtra(KEY_EXTRA_CAT_ID, temp_cat.id);
                     mintent.putExtra(KEY_EXTRA_CONTACT_POSITION, pos);
                     startActivity(mintent);
-                }
-                else {
-                    Toast.makeText(MainActivity.this,"No contact registered!",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "No contact registered!", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -301,22 +303,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    public void saveContact(int category_id, int group_id,String contact_id, String name,String phone,String email,String group_name,
-                            String category_name, String business,String address,String website,String description) {
+    public void saveContact(int category_id, int group_id, String contact_id, String name, String phone, String email, String group_name,
+                            String category_name, String business, String address, String website, String description) {
 //        mdb.addContactToCategory(tempValues.id, contact_id);
-        mdb.addContactToCategory(category_id, group_id,contact_id,name,phone,email,group_name,category_name,business,address,website,description);
-        Log.d(TAG, "saveContact:\n "+category_id+"\n"+group_id+"\n"+contact_id+"\n"+
-                name+"\n"+phone+"\n"+email+"\n"+group_name+"\n"+category_name+"\n"+business+"\n"+address+"\n"+website+"\n"+description);
+        mdb.addContactToCategory(category_id, group_id, contact_id, name, phone, email, group_name, category_name, business, address, website, description);
+        Log.d(TAG, "saveContact:\n " + category_id + "\n" + group_id + "\n" + contact_id + "\n" +
+                name + "\n" + phone + "\n" + email + "\n" + group_name + "\n" + category_name + "\n" + business + "\n" + address + "\n" + website + "\n" + description);
     }
 
-    public void updateContact(int category_id, int group_id,String contact_id, String name,String phone,String email,String group_name,
-                            String category_name, String business,String address,String website,String description) {
+    public void updateContact(int category_id, int group_id, String contact_id, String name, String phone, String email, String group_name,
+                              String category_name, String business, String address, String website, String description) {
 
-        mdb.updateContact(category_id, group_id,contact_id,name,phone,email,group_name,category_name,business,address,website,description);
+        mdb.updateContact(category_id, group_id, contact_id, name, phone, email, group_name, category_name, business, address, website, description);
 
-        Log.d(TAG, "updateContact:\n "+category_id+"\n"+group_id+"\n"+contact_id+"\n"+
-                name+"\n"+phone+"\n"+email+"\n"+group_name+"\n"+category_name+"\n"+business+"\n"+address+"\n"+website+"\n"+description);
+        Log.d(TAG, "updateContact:\n " + category_id + "\n" + group_id + "\n" + contact_id + "\n" +
+                name + "\n" + phone + "\n" + email + "\n" + group_name + "\n" + category_name + "\n" + business + "\n" + address + "\n" + website + "\n" + description);
     }
 
     public void onPickClick(int mPosition) {
@@ -330,11 +331,12 @@ public class MainActivity extends AppCompatActivity {
 
         onClickSelectContact(getCurrentFocus());
     }
+
     public void onCallItemClick(int position) {
         Category tempValues = (Category) CustomListViewValuesArr.get(position);
         Intent intent = new Intent(Intent.ACTION_DIAL);
         if (mdb.getCategoryContact(tempValues.id).equals(""))
-            Toast.makeText(MainActivity.this,"No contact registered!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "No contact registered!", Toast.LENGTH_SHORT).show();
 //            intent.setData(Uri.parse("tel:12345676"));
         else {
             intent.setData(Uri.parse("tel:" + mdb.getContact(tempValues.id).phone));
@@ -395,9 +397,7 @@ public class MainActivity extends AppCompatActivity {
             menu.add(Menu.NONE, 0, Menu.NONE, "Add Category");
             menu.add(Menu.NONE, 1, Menu.NONE, "Delete Category");
             menu.add(Menu.NONE, 2, Menu.NONE, "Duplicate Category");
-        }
-        else
-            if(v.getId() == R.id.tv_tag_services) {
+        } else if (v.getId() == R.id.tv_tag_services) {
             menu.setHeaderTitle("Select");
             menu.add(Menu.NONE, 3, Menu.NONE, "Add Group");
             menu.add(Menu.NONE, 4, Menu.NONE, "Delete Group");
@@ -409,11 +409,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if(info!=null)
-        position = info.position;
+        if (info != null)
+            position = info.position;
 
-        if (info!=null)
-        Log.d(TAG, "onContextItemSelected: info.position="+info.position);
+        if (info != null)
+            Log.d(TAG, "onContextItemSelected: info.position=" + info.position);
         switch (item.getItemId()) {
             case 0:
                 addNewCategory();
@@ -446,6 +446,7 @@ public class MainActivity extends AppCompatActivity {
         String[] permissions = new String[]{Manifest.permission.READ_CONTACTS};
         ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_CODE);
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -461,7 +462,7 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
 
-                        Snackbar.make(getCurrentFocus(),"Application needs to have Contact permission to work properly!",Snackbar.LENGTH_INDEFINITE)
+                        Snackbar.make(getCurrentFocus(), "Application needs to have Contact permission to work properly!", Snackbar.LENGTH_INDEFINITE)
                                 .setAction("Action", null).show();
 
 
@@ -472,12 +473,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
     /////////////////////////////////////////////------------------------------------------------
-
 
 
     public void onClickSelectContact(View btnSelectContact) {
@@ -514,19 +510,18 @@ public class MainActivity extends AppCompatActivity {
             Group group = (Group) _groups.get(current_group_count);
             String groupname = group.name;
 
-            if(mdb.getContactIdForUpdate(category_id) == null)
-            saveContact(category_id,group_id,contactID,name,phone,email,groupname,category_name,contact_business,address,website,description);
+            if (mdb.getContactIdForUpdate(category_id) == null)
+                saveContact(category_id, group_id, contactID, name, phone, email, groupname, category_name, contact_business, address, website, description);
 
             else
-                updateContact(category_id,group_id,contactID,name,phone,email,groupname,category_name,contact_business,address,website,description);
+                updateContact(category_id, group_id, contactID, name, phone, email, groupname, category_name, contact_business, address, website, description);
 
             setCustomAdapter();
 
         }
     }
 
-    public void retreiveContactIDfromPick()
-    {
+    public void retreiveContactIDfromPick() {
         // getting contacts ID
         Cursor cursorID = getContentResolver().query(uriContact,
                 new String[]{ContactsContract.Contacts._ID},
@@ -541,39 +536,39 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "Contact ID from Pick: " + contactID);
     }
-    public void retreiveContactIDfromDB(Category cat_value)
-    {
+
+    public void retreiveContactIDfromDB(Category cat_value) {
 
         contactID = mdb.getCategoryContact(cat_value.id);
-        Log.d(TAG, "retreiveContactIDfromDB: tempValues:"+cat_value.id);
+        Log.d(TAG, "retreiveContactIDfromDB: tempValues:" + cat_value.id);
         Log.d(TAG, "Contact ID from DB: " + contactID);
     }
+
     public String retrieveContactNumber() {
 
         String contactNumber = null;
 
 
-
         // Using the contact ID now we will get contact phone number
-        Log.d(TAG, "retrieveContactNumber: CONTENT_URI"+ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        Log.d(TAG, "retrieveContactNumber: CONTENT_URI" + ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
 
         Cursor cursorPhone = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-         new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?" + " AND " +
                         ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
-                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE ,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
                 new String[]{contactID},
                 null);
 
         if (cursorPhone.moveToFirst()) {
             contactNumber = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
         }
-        if(contactNumber == null){
-                cursorPhone = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+        if (contactNumber == null) {
+            cursorPhone = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
                     ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?" + " AND " +
                             ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
-                            ContactsContract.CommonDataKinds.Phone.TYPE_WORK ,
+                            ContactsContract.CommonDataKinds.Phone.TYPE_WORK,
                     new String[]{contactID},
                     null);
 
@@ -582,12 +577,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if(contactNumber == null){
+        if (contactNumber == null) {
             cursorPhone = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
                     ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?" + " AND " +
                             ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
-                            ContactsContract.CommonDataKinds.Phone.TYPE_HOME ,
+                            ContactsContract.CommonDataKinds.Phone.TYPE_HOME,
                     new String[]{contactID},
                     null);
 
@@ -610,7 +605,7 @@ public class MainActivity extends AppCompatActivity {
         // querying contact data store
 
         Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null
-                , ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID + " = ?" , new String[]{contactID}, null);
+                , ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID + " = ?", new String[]{contactID}, null);
 
 //        Cursor cursor = getContentResolver().query(uriContact, null, null, null, null);
 
@@ -629,32 +624,31 @@ public class MainActivity extends AppCompatActivity {
         return contactName;
 
     }
-    public String retreiveEmail(){
+
+    public String retreiveEmail() {
         String contactEmail = null;
         ContentResolver resolver = getContentResolver();
 //        String id = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup._ID));
 
         Cursor emailCur = resolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null
-                , ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?" , new String[]{contactID}, null);
+                , ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?", new String[]{contactID}, null);
 
-        if(emailCur.moveToFirst())
-        {
+        if (emailCur.moveToFirst()) {
             contactEmail = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
 
         }
 
         Log.d(TAG, "Contact Email: " + contactEmail);
-        return  contactEmail;
+        return contactEmail;
     }
 
-    public String retreiveAddress(){
+    public String retreiveAddress() {
         String contactAddress = null;
         ContentResolver resolver = getContentResolver();
         Cursor addCursor = resolver.query(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_URI, null
-                , ContactsContract.CommonDataKinds.StructuredPostal.CONTACT_ID + " = ?" , new String[]{contactID}, null);
+                , ContactsContract.CommonDataKinds.StructuredPostal.CONTACT_ID + " = ?", new String[]{contactID}, null);
 
-        if(addCursor.moveToFirst())
-        {
+        if (addCursor.moveToFirst()) {
             contactAddress = addCursor.getString(addCursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS));
 
         }
@@ -663,11 +657,11 @@ public class MainActivity extends AppCompatActivity {
         return contactAddress;
     }
 
-    public String retreiveWebsite(){
+    public String retreiveWebsite() {
         String contactWebsite = null;
 
 
-        final String[] projection = new String[] {
+        final String[] projection = new String[]{
                 ContactsContract.CommonDataKinds.Website.URL,
                 ContactsContract.CommonDataKinds.Website.TYPE
         };
@@ -675,8 +669,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Cursor contactData = getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, selection, null, null);
 
-        if(contactData.moveToFirst())
-        {
+        if (contactData.moveToFirst()) {
             contactWebsite = contactData.getString(contactData.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
 
         }
@@ -684,6 +677,7 @@ public class MainActivity extends AppCompatActivity {
 
         return contactWebsite;
     }
+
     public String retrieveNotes() {
 
         String contactNotes = null;
@@ -704,8 +698,8 @@ public class MainActivity extends AppCompatActivity {
         return contactNotes;
 
     }
-    private String retreiveBusiness()
-    {
+
+    public String retreiveBusiness() {
         // Get Organizations
         String contactBusiness = null;
 
@@ -715,45 +709,39 @@ public class MainActivity extends AppCompatActivity {
                 ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE};
         Cursor orgCur = getContentResolver().query(ContactsContract.Data.CONTENT_URI, null,
                 orgWhere, orgWhereParams, null);
-        if (orgCur.moveToFirst())
-        {
+        if (orgCur.moveToFirst()) {
             contactBusiness = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY)) + ",";
-            if(orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE))!=null){
+            if (orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE)) != null) {
                 contactBusiness += orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE));
             }
 
         }
 
-        Log.d(TAG, "retreiveBusiness: contactBusiness="+contactBusiness);
+        Log.d(TAG, "retreiveBusiness: contactBusiness=" + contactBusiness);
         orgCur.close();
         return contactBusiness;
     }
 
-    private void allSIMContact()
-    {
-        try
-        {
+    private void allSIMContact() {
+        try {
             String ClsSimPhonename = null;
             String ClsSimphoneNo = null;
 
             Uri simUri = Uri.parse("content://icc/adn");
-            Cursor cursorSim = this.getContentResolver().query(simUri,null,null,null,null);
+            Cursor cursorSim = this.getContentResolver().query(simUri, null, null, null, null);
 
-            Log.i("PhoneContact", "total: "+cursorSim.getCount());
+            Log.i("PhoneContact", "total: " + cursorSim.getCount());
 
-            while (cursorSim.moveToNext())
-            {
-                ClsSimPhonename =cursorSim.getString(cursorSim.getColumnIndex("name"));
+            while (cursorSim.moveToNext()) {
+                ClsSimPhonename = cursorSim.getString(cursorSim.getColumnIndex("name"));
                 ClsSimphoneNo = cursorSim.getString(cursorSim.getColumnIndex("number"));
-                ClsSimphoneNo.replaceAll("\\D","");
+                ClsSimphoneNo.replaceAll("\\D", "");
                 ClsSimphoneNo.replaceAll("&", "");
-                ClsSimPhonename=ClsSimPhonename.replace("|","");
+                ClsSimPhonename = ClsSimPhonename.replace("|", "");
 
-                Log.i("PhoneContact", "name: "+ClsSimPhonename+" phone: "+ClsSimphoneNo);
+                Log.i("PhoneContact", "name: " + ClsSimPhonename + " phone: " + ClsSimphoneNo);
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -762,7 +750,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void createVcard(int position) throws IOException {
         Category tempValues = (Category) CustomListViewValuesArr.get(position);
-        fileName = mdb.getContact(tempValues.id).name+".vcf";
+        fileName = mdb.getContact(tempValues.id).name + ".vcf";
 //        fileName = "Test.vcf";
 
         File file = new File(this.getExternalFilesDir(null), fileName);
@@ -775,11 +763,11 @@ public class MainActivity extends AppCompatActivity {
 //        vcard.setGender(Gender.male());
         Contact contact;
 
-        Log.d(TAG, "createVcard: position ="+position);
-        Log.d(TAG, "createVcard: tempValues.id ="+tempValues.id);
+        Log.d(TAG, "createVcard: position =" + position);
+        Log.d(TAG, "createVcard: tempValues.id =" + tempValues.id);
 
         if (mdb.getCategoryContact(tempValues.id).equals(""))
-            Toast.makeText(this,"No contact registered!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No contact registered!", Toast.LENGTH_SHORT).show();
         else {
 
 //        Log.d(TAG, "createVcard: position =" +position);
@@ -849,11 +837,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void sendEmail()
-    {
+    public void sendEmail() {
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setType("text/plain");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {""});
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{""});
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "");
         emailIntent.putExtra(Intent.EXTRA_TEXT, "");
         File file = new File(this.getExternalFilesDir(null), fileName);
@@ -867,8 +854,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void showImportDialog()
-    {
+    private void showImportDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("Import Template");
         alertDialog.setMessage("Enter Template Content Here.");
@@ -885,12 +871,12 @@ public class MainActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         final String importText = input.getText().toString();
-                        if(importText.length() ==  0 || !importText.contains("|")){
+                        if (importText.length() == 0 || !importText.contains("|")) {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                            if(importText.length()== 0) {
+                            if (importText.length() == 0) {
                                 alertDialog.setTitle("No Data Entered!");
                                 alertDialog.setMessage("You did not entered any template data to import!");
-                            } else{
+                            } else {
                                 alertDialog.setTitle("Invalid Content!");
                                 alertDialog.setMessage("You entered some invalid content, make sure that you copy and paste content from template properly.");
                             }
@@ -902,7 +888,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                             alertDialog.show();
-                        }else {
+                        } else {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Successfully imported");
                             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
@@ -914,7 +900,8 @@ public class MainActivity extends AppCompatActivity {
                                     finish();
                                     startActivity(intent);
                                 }
-                            });alertDialog.show();
+                            });
+                            alertDialog.show();
 
                         }
 
@@ -931,26 +918,26 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    public void importTemplate(String text){
+    public void importTemplate(String text) {
         String[] data = text.split("\\|");
         mdb.addGroup(data[0]);          // Adding group in database
         _groups = mdb.getAllGroups();   // adding newly added group to
-            for (int i =1; i < data.length; i++) {
-                String aData = data[i];
-                mdb.addCategory(_groups.get(_groups.size() - 1).id, aData);
-            }
+        for (int i = 1; i < data.length; i++) {
+            String aData = data[i];
+            mdb.addCategory(_groups.get(_groups.size() - 1).id, aData);
+        }
 
         Log.d("importTemplate", "_group size is = " + _groups.size() + "");
-        Log.d(TAG, "importTemplate: mdb.getGroupTableCount()="+ mdb.getGroupTableCount());
-        Log.d(TAG, "importTemplate: mdb.getCategoriesTableCount()="+ mdb.getCategoriesTableCount());
-        Log.d(TAG, "importTemplate: mdb.getCategoriesContactTableCount()="+ mdb.getCategoriesContactTableCount());
+        Log.d(TAG, "importTemplate: mdb.getGroupTableCount()=" + mdb.getGroupTableCount());
+        Log.d(TAG, "importTemplate: mdb.getCategoriesTableCount()=" + mdb.getCategoriesTableCount());
+        Log.d(TAG, "importTemplate: mdb.getCategoriesContactTableCount()=" + mdb.getCategoriesContactTableCount());
 
         service_tags = new String[_groups.size()];
         for (int i = 0; i < _groups.size(); i++)
             service_tags[i] = _groups.get(i).name;
     }
 
-    void addNewGroup(){
+    void addNewGroup() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("Add New Group");
         alertDialog.setMessage("Enter group name");
@@ -966,18 +953,18 @@ public class MainActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         final String importText = input.getText().toString();
-                        if(importText.length() ==  0){
+                        if (importText.length() == 0) {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                                alertDialog.setTitle("Invalid Name Entered!");
-                                alertDialog.setMessage("Please add a valid name");
-                                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
+                            alertDialog.setTitle("Invalid Name Entered!");
+                            alertDialog.setMessage("Please add a valid name");
+                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     alertDialog.dismiss();
                                 }
                             });
                             alertDialog.show();
-                        }else {
+                        } else {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Successfully Added");
                             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
@@ -989,7 +976,8 @@ public class MainActivity extends AppCompatActivity {
                                     finish();
                                     startActivity(intent);
                                 }
-                            });alertDialog.show();
+                            });
+                            alertDialog.show();
 
                         }
 
@@ -1006,7 +994,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    void addNewCategory(){
+    void addNewCategory() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("Add New Category");
         alertDialog.setMessage("Enter category name");
@@ -1023,7 +1011,7 @@ public class MainActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         final String importText = input.getText().toString();
-                        if(importText.length() ==  0){
+                        if (importText.length() == 0) {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Invalid Name Entered!");
                             alertDialog.setMessage("Please add a valid name");
@@ -1034,19 +1022,20 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                             alertDialog.show();
-                        }else {
+                        } else {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Successfully Added");
                             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     // restarting activity to refresh code spinner
-                                    mdb.addCategory(_groups.get(current_group_count).id,importText);
+                                    mdb.addCategory(_groups.get(current_group_count).id, importText);
                                     Intent intent = getIntent();
                                     finish();
                                     startActivity(intent);
                                 }
-                            });alertDialog.show();
+                            });
+                            alertDialog.show();
 
                         }
 
@@ -1063,7 +1052,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void showdeleteGroupDialog(){
+    private void showdeleteGroupDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("Delete Group!");
         alertDialog.setMessage("If you delete a Group it will delete all the categories and Contacts associated with it. Are You Sure?");
@@ -1083,10 +1072,11 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
-    private void deleteGroup(){
+
+    private void deleteGroup() {
         mdb.deleteGroupWithAllCategoriesAndDetails(service_tag.getText().toString());
         mdb.getAllGroups();
-        if(current_group_count > 0){
+        if (current_group_count > 0) {
             current_group_count--;
         }
 
@@ -1095,87 +1085,98 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void deleteCategory(){
+    private void deleteCategory() {
 
         Category temp_cat = CustomListViewValuesArr.get(position);
 //        retreiveContactIDfromDB(temp_cat);
         int category_id = temp_cat.id;
 
-        Log.d(TAG, "deleteCategory:   position ="+position+"   Category deleted ID ="+category_id+"   name="+temp_cat.name);
+        Log.d(TAG, "deleteCategory:   position =" + position + "   Category deleted ID =" + category_id + "   name=" + temp_cat.name);
         mdb.deleteCategoryWithContactDetails(category_id);
         Intent intent = getIntent();
         finish();
         startActivity(intent);
     }
-    private void duplicateCategory(){
+
+    private void duplicateCategory() {
         Category temp_cat = CustomListViewValuesArr.get(position);
         String cat_name = temp_cat.name;
-        mdb.addCategory(_groups.get(current_group_count).id,cat_name);
+        mdb.addCategory(_groups.get(current_group_count).id, cat_name);
         Intent intent = getIntent();
         finish();
         startActivity(intent);
     }
 
-    
-    private void exportCompleteData(){
-        String string =  "Group| Category| BusinessName| Phone| Name| email| Address| Website| About ] \n";
-        ArrayList<Category> categoryList =  mdb.getAllCategories();
+
+    private void exportCompleteData() {
+        String string = "Group| Category| BusinessName| Phone| Name| email| Address| Website| About ] \n";
+        ArrayList<Category> categoryList = mdb.getAllCategories();
         ArrayList<Contact> contactList = mdb.getallContactsToExport();
         ArrayList<Group> groupList = mdb.getAllGroups();
 
 
-
-        for(Category category: categoryList)
-        {
-            String bus="";
-            String phone="";
-            String name="";
-            String email="";
-            String addr="";
-            String web="";
-            String desc="";
+        for (Category category : categoryList) {
+            String bus = "";
+            String phone = "";
+            String name = "";
+            String email = "";
+            String addr = "";
+            String web = "";
+            String desc = "";
 
             boolean inContactList = false;
 
-            for (Contact contact :contactList) {
+            for (Contact contact : contactList) {
                 if (category.id == contact.category_id) {
 
-                    if(contact.business != null){bus = contact.business;}
-                    if(contact.phone != null){phone = contact.phone;}
-                    if(contact.name != null){name = contact.name;}
-                    if(contact.email != null){email = contact.email;}
-                    if(contact.address != null){addr = contact.address;}
-                    if(contact.website != null){web = contact.website;}
-                    if(contact.description != null){desc = contact.description;}
+                    if (contact.business != null) {
+                        bus = contact.business;
+                    }
+                    if (contact.phone != null) {
+                        phone = contact.phone;
+                    }
+                    if (contact.name != null) {
+                        name = contact.name;
+                    }
+                    if (contact.email != null) {
+                        email = contact.email;
+                    }
+                    if (contact.address != null) {
+                        addr = contact.address;
+                    }
+                    if (contact.website != null) {
+                        web = contact.website;
+                    }
+                    if (contact.description != null) {
+                        desc = contact.description;
+                    }
 //                    string += contact.group_name + "| " + contact.category_name + "| " + contact.business + "| " + contact.phone + "| " +
 //                            contact.name + "| " + contact.email + "| " + contact.address + "| " + contact.website + "| " + contact.description + "\n";
 
                     string += contact.group_name + "| " + contact.category_name + "| " + bus + "| " + phone + "| " +
-                            name + "| " + email + "| " + addr + "| " + web + "| " + desc + "]"+"\n";
+                            name + "| " + email + "| " + addr + "| " + web + "| " + desc + "]" + "\n";
 
-                    Log.d(TAG, "exportCompleteData: removed contact from list = "+string);
+                    Log.d(TAG, "exportCompleteData: removed contact from list = " + string);
                     contactList.remove(true);
                     Log.d(TAG, "exportCompleteData: category_id found in CONTACT LIST, written on string, removed from contact list.");
                     inContactList = true;
                     break;
                 }
             }
-                if(!inContactList)
-                {
-                    String groupName = null;
-                    for(Group group : groupList){
-                        if(group.id == category.group_id)
-                        {
-                            groupName = group.name;
-                            Log.d(TAG, "exportCompleteData: groupName = "+groupName);
-                            string += groupName+"| "+category.name+"| "+"| "+"| "+
-                                    "| "+"| "+"| "+"| "+"]\n";
+            if (!inContactList) {
+                String groupName = null;
+                for (Group group : groupList) {
+                    if (group.id == category.group_id) {
+                        groupName = group.name;
+                        Log.d(TAG, "exportCompleteData: groupName = " + groupName);
+                        string += groupName + "| " + category.name + "| " + "| " + "| " +
+                                "| " + "| " + "| " + "| " + "]\n";
 //                            Log.d(TAG, "exportCompleteData: string="+string);
-                            break;
-                        }
+                        break;
                     }
-
                 }
+
+            }
 
         }
 
@@ -1185,30 +1186,30 @@ public class MainActivity extends AppCompatActivity {
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(string);
             bw.close();
-            Log.d(TAG, "export: string = "+ string);
+            Log.d(TAG, "export: string = " + string);
             sendEmailForExportData();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Toast.makeText(MainActivity.this,"File Saved! in "+MainActivity.this.getExternalFilesDir(null),Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this, "File Saved! in " + MainActivity.this.getExternalFilesDir(null), Toast.LENGTH_LONG).show();
 
     }
 
 
-    private void importCompleteData(String data){
+    private void importCompleteData(String data) {
         String[] lines = data.split("]");
-        String[] linedata =null;
-        String groupName,categoryName,business,phone,name,email,address,website,description;
-        String contactId="1";
-        int groupId = 0,categoryId;
+        String[] linedata = null;
+        String groupName, categoryName, business, phone, name, email, address, website, description;
+        String contactId = "1";
+        int groupId = 0, categoryId;
 
-        for (int i = 1; i < lines.length; i++){
+        for (int i = 1; i < lines.length; i++) {
             String line = lines[i];
-            Log.d(TAG, "importCompleteData: Line:"+line);
+            Log.d(TAG, "importCompleteData: Line:" + line);
 
-            if(line.equals("\n"))break;
+            if (line.equals("\n")) break;
 
             linedata = line.split("\\|");
 
@@ -1223,7 +1224,6 @@ public class MainActivity extends AppCompatActivity {
             address = linedata[6].trim();
             website = linedata[7].trim();
             description = linedata[8].trim();
-
 
 
             ArrayList<Group> groups = mdb.getAllGroups();
@@ -1242,7 +1242,7 @@ public class MainActivity extends AppCompatActivity {
             if (!groupPresent) {
 //                Log.d(TAG, "importCompleteData: groupPresent=" + groupPresent);
                 mdb.addGroup(groupName);
-                Log.d(TAG, "importCompleteData: group added="+groupName);
+                Log.d(TAG, "importCompleteData: group added=" + groupName);
                 // Potential error if db not refreshed
                 Group group = mdb.getGroup(groupName);
                 groupId = group.id;
@@ -1250,8 +1250,8 @@ public class MainActivity extends AppCompatActivity {
                 mdb.addCategory(groupId, categoryName);
             }
 
-            if(!name.isEmpty()) {           // if Category also has data then we need to add in Categories_contact table too.
-                Log.d(TAG, "importCompleteData: name = "+name);
+            if (!name.isEmpty()) {           // if Category also has data then we need to add in Categories_contact table too.
+                Log.d(TAG, "importCompleteData: name = " + name);
                 categoryId = mdb.getCategoryId(categoryName, groupId);
 //                Log.d(TAG, "importCompleteData: categoryId: " + categoryId + " categoryName: " + categoryName + " groupName: " + groupName);
                 mdb.addContactToCategory(categoryId, groupId, contactId, name, phone, email, groupName, categoryName, business, address, website, description);
@@ -1259,8 +1259,9 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    private void showImportAllCautionDialog(){
-        final AlertDialog alertDialog= new AlertDialog.Builder(MainActivity.this).create();
+
+    private void showImportAllCautionDialog() {
+        final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Caution!");
         alertDialog.setMessage("It will remove all current data and override with imported data.\nPress OK to continue.");
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
@@ -1279,8 +1280,8 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
-    private void showImportAllDialog()
-    {
+
+    private void showImportAllDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("Import All Data");
         alertDialog.setMessage("Enter Data Content Here.");
@@ -1297,12 +1298,12 @@ public class MainActivity extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         final String importText = input.getText().toString();
-                        if(importText.length() ==  0 || !importText.contains("Group| Category| BusinessName| Phone| Name| email| Address| Website| About")){
+                        if (importText.length() == 0 || !importText.contains("Group| Category| BusinessName| Phone| Name| email| Address| Website| About")) {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                            if(importText.length()== 0) {
+                            if (importText.length() == 0) {
                                 alertDialog.setTitle("No Data Entered!");
                                 alertDialog.setMessage("You did not entered any template data to import!");
-                            } else{
+                            } else {
                                 alertDialog.setTitle("Invalid Content!");
                                 alertDialog.setMessage("You entered some invalid content, make sure that you copy and paste content from file properly.");
                             }
@@ -1314,7 +1315,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                             alertDialog.show();
-                        }else {
+                        } else {
                             final AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Successfully imported");
                             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
@@ -1328,7 +1329,8 @@ public class MainActivity extends AppCompatActivity {
                                     finish();
                                     startActivity(intent);
                                 }
-                            });alertDialog.show();
+                            });
+                            alertDialog.show();
 
                         }
 
@@ -1344,8 +1346,8 @@ public class MainActivity extends AppCompatActivity {
 
         alertDialog.show();
     }
-    public void sendEmailForExportData()
-    {
+
+    public void sendEmailForExportData() {
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setType("text/plain");
 //        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});

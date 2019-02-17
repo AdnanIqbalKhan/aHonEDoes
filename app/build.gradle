@@ -32,4 +32,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.googlecode.ez-vcard:ez-vcard:0.10.3'
     implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
 }

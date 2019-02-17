@@ -84,7 +84,7 @@ public class MainActivityVcard extends AppCompatActivity {
                 if (mList.size() < MAX_CONTACT_LIMIT || MAX_CONTACT_LIMIT == 0) {
                     mList.add(new VCardMide(-1, "", "", "",
                             "", "", "", "", "", "", "",
-                            "", "", "", "", ""));
+                            "", "", "", "", "","",null));
                                         updateUI(true);
                 } else {
                     Toast.makeText(MainActivityVcard.this, "Max Contacts Allowed " + MAX_CONTACT_LIMIT, Toast.LENGTH_SHORT).show();

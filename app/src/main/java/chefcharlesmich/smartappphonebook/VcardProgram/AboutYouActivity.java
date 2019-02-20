@@ -237,8 +237,8 @@ class ContactData {
     }
 
     public VCardMide getcontact() {
-        return new VCardMide(0, "", getName(), "", getAddress(), getNumber(),
-                getEmail(), "", getBirthdate(), "", "", "", "", "", ""
+        return new VCardMide(0, getCompanyName(), getName(), getTitle(), getAddress(), getNumber(),
+                getEmail(), "", getBirthdate(), getWebsite(), "", "", "", "", ""
                 , "", "", getPhoto());
     }
 
@@ -363,4 +363,70 @@ class ContactData {
         cursor.close();
         return address;
     }
+
+    private String getCompanyName() {
+        String orgWhere = ContactsContract.Data.RAW_CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+        String[] orgWhereParams = new String[]{getRawContactId(contactID),
+                ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE};
+        Cursor cursor = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+                null, orgWhere, orgWhereParams, null);
+
+        if (cursor == null) return null;
+        String name = null;
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY));
+        }
+        cursor.close();
+        return name;
+    }
+
+    private String getTitle() {
+        String orgWhere = ContactsContract.Data.RAW_CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+        String[] orgWhereParams = new String[]{getRawContactId(contactID),
+                ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE};
+        Cursor cursor = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+                null, orgWhere, orgWhereParams, null);
+
+        if (cursor == null) return null;
+        String name = null;
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE));
+        }
+        cursor.close();
+        return name;
+    }
+
+    private String getRawContactId(String contactId) {
+        String[] projection = new String[]{ContactsContract.RawContacts._ID};
+        String selection = ContactsContract.RawContacts.CONTACT_ID + "=?";
+        String[] selectionArgs = new String[]{contactId};
+        Cursor c = context.getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, projection, selection, selectionArgs, null);
+        if (c == null) return null;
+        int rawContactId = -1;
+        if (c.moveToFirst()) {
+            rawContactId = c.getInt(c.getColumnIndex(ContactsContract.RawContacts._ID));
+        }
+        c.close();
+        return String.valueOf(rawContactId);
+    }
+
+    private String getWebsite() {
+        String website = null;
+
+        String orgWhere = ContactsContract.Data.RAW_CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+        String[] orgWhereParams = new String[]{getRawContactId(contactID),
+                ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE};
+        Cursor cursor = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+                null, orgWhere, orgWhereParams, null);
+
+        while (cursor.moveToNext()) {
+            String a = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
+            if (a != null) {
+                website = a;
+            }
+        }
+        cursor.close();
+        return website;
+    }
+
 }

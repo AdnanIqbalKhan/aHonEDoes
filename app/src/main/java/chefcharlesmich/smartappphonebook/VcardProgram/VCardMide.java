@@ -39,8 +39,6 @@ public class VCardMide {
         this.vcf_path = vcf_path;
         this.picture = picture;
         this.pic_link = pic_link;
-
-        Log.d(TAG, "VCardMide: on creation " + pic_link);
     }
 
     public void saveImage() {
@@ -51,9 +49,7 @@ public class VCardMide {
             this.picture.compress(Bitmap.CompressFormat.PNG, 90, out);
             out.flush();
             out.close();
-            Log.d(TAG, "saveImage: image file saved at " + this.pic_link);
         } catch (Exception e) {
-            Log.d(TAG, "saveImage: Error in saving file at " + this.pic_link);
             e.printStackTrace();
         }
     }
@@ -63,10 +59,8 @@ public class VCardMide {
         File sd = Environment.getExternalStorageDirectory();
         File imgFile = new File(sd, filename);
         if (imgFile.exists()) {
-            Log.d(TAG, "loadImage: image file loaded successfully " + this.pic_link);
             this.picture = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-        } else
-            Log.d(TAG, "loadImage: image file not found");
+        }
     }
 
     @Override

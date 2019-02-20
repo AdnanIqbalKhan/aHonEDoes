@@ -1,5 +1,8 @@
 package chefcharlesmich.smartappphonebook.VcardProgram;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -9,22 +12,27 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import chefcharlesmich.smartappphonebook.Models.Contact;
 import chefcharlesmich.smartappphonebook.R;
+
 
 public class AboutYouActivity extends AppCompatActivity {
 
@@ -37,6 +45,7 @@ public class AboutYouActivity extends AppCompatActivity {
 
 
     int REQUEST_CODE_PICK_CONTACTS = 2;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +91,6 @@ public class AboutYouActivity extends AppCompatActivity {
             Toast.makeText(AboutYouActivity.this, Integer.toString(vcardid), Toast.LENGTH_LONG).show();
             if (vcardid != -1) {
                 VCardMide got = mdb.getVCardById(vcardid);
-
-                Log.d(TAG, "onCreate: before " + got.pic_link);
 
                 got.loadImage();
                 companyname.setText(got.company_name);
@@ -169,6 +176,12 @@ public class AboutYouActivity extends AppCompatActivity {
                 social2.setText(card.social2);
                 weblink1.setText(card.weblink1);
                 weblink2.setText(card.weblink2);
+
+                if (card.picture != null) {
+                    picture.setBackground(new BitmapDrawable(getResources(), card.picture));
+                } else {
+                    picture.setBackground(getResources().getDrawable(R.drawable.ic_person));
+                }
             } else {
                 Toast.makeText(AboutYouActivity.this, "Card is null", Toast.LENGTH_SHORT).show();
             }
@@ -196,43 +209,131 @@ public class AboutYouActivity extends AppCompatActivity {
 
     public VCardMide retrieveContact(Uri uriContact) {
         String contactID = null;
-        // getting contacts ID
         Cursor cursorID = getContentResolver().query(uriContact, null,
                 null, null, null);
 
+        Log.d(TAG, "retrieveContact: " + uriContact.toString());
         if (cursorID.moveToFirst()) {
             contactID = cursorID.getString(cursorID.getColumnIndex(ContactsContract.Contacts._ID));
-            String abc = cursorID.getString(cursorID.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            Log.d(TAG, "Contact Name from Pick: " + abc);
         }
         cursorID.close();
         Log.d(TAG, "Contact ID from Pick: " + contactID);
-        Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+
+        VCardMide card = (new ContactData(AboutYouActivity.this, contactID)).getcontact();
+        Log.d(TAG, "retrieveContact: from class  \n " + card.toString());
+        return card;
+    }
+}
+
+
+class ContactData {
+    private static final String TAG = "T1";
+    private final Context context;
+    private final String contactID;
+
+    ContactData(Context context, String contactID) {
+        this.context = context;
+        this.contactID = contactID;
+    }
+
+    public VCardMide getcontact() {
+        return new VCardMide(0, "", getName(), "", "", getNumber(),
+                getEmail(), "", getBirthdate(), "", "", "", "", "", ""
+                , "", "", getPhoto());
+    }
+
+    private Bitmap getPhoto() {
+        Bitmap photo = null;
+        try {
+            InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(context.getContentResolver(),
+                    ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)));
+            if (inputStream != null) {
+                photo = BitmapFactory.decodeStream(inputStream);
+            }
+            if (inputStream != null)
+                inputStream.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return photo;
+    }
+
+    private String getNumber() {
+        String contactNumber = null;
+        // Using the contact ID now we will get contact phone number
+        Cursor cursorPhone = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " +
+                        ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
+                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
+
+                new String[]{contactID},
+                null);
+
+        if (cursorPhone.moveToFirst()) {
+            contactNumber = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+        }
+        cursorPhone.close();
+        return contactNumber;
+    }
+
+    private String getName() {
+        String contactName = null;
+        // querying contact data store
+        Cursor cursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 null,
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
                 new String[]{contactID},
                 null);
-
-        VCardMide card = null;
         if (cursor.moveToFirst()) {
-            String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-            String contactEmail = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-            String contactAddress = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS));
-            String contactWebsite = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
-            String companyName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY));
-            String title = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE));
-            String department = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DEPARTMENT));
-
-            card = new VCardMide(0, companyName, contactName, title, contactAddress, phoneNumber,
-                    contactEmail, "", "", contactWebsite, "", "", "", "",
-                    "", "",
-                    "", null);
-            Log.d(TAG, "Contact Pick: " + card.toString());
+            contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
         }
         cursor.close();
-        return card;
+        return contactName;
     }
 
+    private String getEmail() {
+        String contactEmail = null;
+        Cursor cursor = context.getContentResolver().query(
+                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                null, ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                new String[]{contactID},
+                null);
 
+        while (cursor.moveToNext()) {
+            String a = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+            if (a != null) {
+                contactEmail = a;
+                break;
+            }
+        }
+        cursor.close();
+        return contactEmail;
+    }
+
+    private String getBirthdate() {
+        String birthdate = null;
+        Cursor cursor = context.getContentResolver().query(android.provider.ContactsContract.Data.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Event.DATA},
+                android.provider.ContactsContract.Data.CONTACT_ID + " = " +
+                        contactID + " AND " + ContactsContract.Contacts.Data.MIMETYPE + " = '" +
+                        ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE + "' AND " +
+                        ContactsContract.CommonDataKinds.Event.TYPE + " = " +
+                        ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY, null,
+
+                android.provider.ContactsContract.Data.DISPLAY_NAME);
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                String a = cursor.getString(0);
+                if (a != null) {
+                    birthdate = a;
+                    break;
+                }
+            }
+        }
+        cursor.close();
+        return birthdate;
+    }
 }

@@ -238,7 +238,7 @@ class ContactData {
 
     public VCardMide getcontact() {
         return new VCardMide(0, getCompanyName(), getName(), getTitle(), getAddress(), getNumber(),
-                getEmail(), "", getBirthdate(), getWebsite(), "", "", "", "", ""
+                getEmail(), getNote(), getBirthdate(), getWebsite(), "", "", "", "", ""
                 , "", "", getPhoto());
     }
 
@@ -429,4 +429,22 @@ class ContactData {
         return website;
     }
 
+    private String getNote() {
+        String note = null;
+
+        String orgWhere = ContactsContract.Data.RAW_CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+        String[] orgWhereParams = new String[]{getRawContactId(contactID),
+                ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE};
+        Cursor cursor = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+                null, orgWhere, orgWhereParams, null);
+
+        while (cursor.moveToNext()) {
+            String a = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE));
+            if (a != null) {
+                note = a;
+            }
+        }
+        cursor.close();
+        return note;
+    }
 }

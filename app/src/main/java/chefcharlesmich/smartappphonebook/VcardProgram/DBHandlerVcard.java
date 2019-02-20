@@ -13,10 +13,10 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 public class DBHandlerVcard extends SQLiteOpenHelper {
-
+    private static final String TAG = "T1";
 
     private static final String DATABASE_NAME = "prompt";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     // Contacts table name
     private static final String TABLE_VCARD = "vcard";
@@ -39,7 +39,6 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
     private static final String KEY_WEBLINK2 = "weblink2";
     private static final String KEY_PICTURE_LINK = "piclink";
     private static final String KEY_VCF_PATH = "vcf_path";
-    private static final String KEY_PICTURE_BLOB = "picture_blob";
 
     public DBHandlerVcard(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,8 +52,7 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
                 + " TEXT," + KEY_NAME + " TEXT," + KEY_TITLE + " TEXT," + KEY_ADDRESS + " TEXT," +
                 KEY_PHONE + " TEXT," + KEY_EMAIL + " TEXT," + KEY_DESCRIPTION + " TEXT," + KEY_BIRTHDAY + " TEXT," +
                 KEY_WEBSITE + " TEXT," + KEY_INDUSTRY + " TEXT," + " TEXT," + KEY_SOCIAL1 + " TEXT," + KEY_SOCIAL2 + " TEXT," +
-                KEY_WEBLINK1 + " TEXT," + KEY_WEBLINK2 + " TEXT," + KEY_VCF_PATH + " TEXT," + KEY_PICTURE_LINK + " TEXT, " +
-                KEY_PICTURE_BLOB + " BLOB);";
+                KEY_WEBLINK1 + " TEXT," + KEY_WEBLINK2 + " TEXT," + KEY_PICTURE_LINK + " TEXT," + KEY_VCF_PATH + " TEXT);";
         db.execSQL(CREATE_SMSLOGS_TABLE);
     }
 
@@ -69,6 +67,9 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
 
     // Adding new CALL log
     public long addVcardIfo(VCardMide vCard) {
+
+        Log.d(TAG, "addVcardIfo: " + vCard.pic_link);
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -88,7 +89,6 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         values.put(KEY_WEBLINK2, vCard.weblink2);
         values.put(KEY_PICTURE_LINK, vCard.pic_link);
         values.put(KEY_VCF_PATH, vCard.pic_link);
-        values.put(KEY_PICTURE_BLOB, DbBitmapUtility.getBytes(vCard.picture));
 
         // Inserting Row
         long id = db.insert(TABLE_VCARD, null, values);
@@ -111,12 +111,24 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
             Cursor cursor = db.rawQuery(selectQuery, null);
             while (cursor.moveToNext()) {
                 return new VCardMide(
-                        cursor.getInt(0), cursor.getString(1), cursor.getString(2),
-                        cursor.getString(3), cursor.getString(4), cursor.getString(5),
-                        cursor.getString(6), cursor.getString(7), cursor.getString(8),
-                        cursor.getString(9), cursor.getString(10), cursor.getString(11),
-                        cursor.getString(12), cursor.getString(13), cursor.getString(14)
-                        , cursor.getString(15), cursor.getString(16), DbBitmapUtility.getImage(cursor.getBlob(17)));
+                        cursor.getInt(cursor.getColumnIndex(KEY_ID)),
+                        cursor.getString(cursor.getColumnIndex(KEY_COMPANY_NAME)),
+                        cursor.getString(cursor.getColumnIndex(KEY_NAME)),
+                        cursor.getString(cursor.getColumnIndex(KEY_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(KEY_ADDRESS)),
+                        cursor.getString(cursor.getColumnIndex(KEY_PHONE)),
+                        cursor.getString(cursor.getColumnIndex(KEY_EMAIL)),
+                        cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION)),
+                        cursor.getString(cursor.getColumnIndex(KEY_BIRTHDAY)),
+                        cursor.getString(cursor.getColumnIndex(KEY_WEBSITE)),
+                        cursor.getString(cursor.getColumnIndex(KEY_INDUSTRY)),
+                        cursor.getString(cursor.getColumnIndex(KEY_SOCIAL1)),
+                        cursor.getString(cursor.getColumnIndex(KEY_SOCIAL2)),
+                        cursor.getString(cursor.getColumnIndex(KEY_WEBLINK1)),
+                        cursor.getString(cursor.getColumnIndex(KEY_WEBLINK2)),
+                        cursor.getString(cursor.getColumnIndex(KEY_PICTURE_LINK)),
+                        cursor.getString(cursor.getColumnIndex(KEY_VCF_PATH)),
+                        null);
             }
             db.close();
 
@@ -137,12 +149,24 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
             Cursor cursor = db.rawQuery(selectQuery, null);
             while (cursor.moveToNext()) {
                 mList.add(new VCardMide(
-                        cursor.getInt(0), cursor.getString(1), cursor.getString(2),
-                        cursor.getString(3), cursor.getString(4), cursor.getString(5),
-                        cursor.getString(6), cursor.getString(7), cursor.getString(8),
-                        cursor.getString(9), cursor.getString(10), cursor.getString(11),
-                        cursor.getString(12), cursor.getString(13), cursor.getString(14)
-                        , cursor.getString(15), cursor.getString(16), DbBitmapUtility.getImage(cursor.getBlob(17))));
+                        cursor.getInt(cursor.getColumnIndex(KEY_ID)),
+                        cursor.getString(cursor.getColumnIndex(KEY_COMPANY_NAME)),
+                        cursor.getString(cursor.getColumnIndex(KEY_NAME)),
+                        cursor.getString(cursor.getColumnIndex(KEY_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(KEY_ADDRESS)),
+                        cursor.getString(cursor.getColumnIndex(KEY_PHONE)),
+                        cursor.getString(cursor.getColumnIndex(KEY_EMAIL)),
+                        cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION)),
+                        cursor.getString(cursor.getColumnIndex(KEY_BIRTHDAY)),
+                        cursor.getString(cursor.getColumnIndex(KEY_WEBSITE)),
+                        cursor.getString(cursor.getColumnIndex(KEY_INDUSTRY)),
+                        cursor.getString(cursor.getColumnIndex(KEY_SOCIAL1)),
+                        cursor.getString(cursor.getColumnIndex(KEY_SOCIAL2)),
+                        cursor.getString(cursor.getColumnIndex(KEY_WEBLINK1)),
+                        cursor.getString(cursor.getColumnIndex(KEY_WEBLINK2)),
+                        cursor.getString(cursor.getColumnIndex(KEY_PICTURE_LINK)),
+                        cursor.getString(cursor.getColumnIndex(KEY_VCF_PATH)),
+                        null));
             }
             db.close();
         } catch (Exception e) {
@@ -152,6 +176,8 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
     }
 
     public int updateVcard(VCardMide vCard) {
+        Log.d(TAG, "updateVcard: " + vCard.pic_link);
+
         String where = KEY_ID + "=?";
         String[] whereArgs = new String[]{vCard.id + ""};
 
@@ -173,7 +199,6 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         values.put(KEY_WEBLINK2, vCard.weblink2);
         values.put(KEY_PICTURE_LINK, vCard.pic_link);
         values.put(KEY_VCF_PATH, vCard.pic_link);
-        values.put(KEY_PICTURE_BLOB, DbBitmapUtility.getBytes(vCard.picture));
 
         // Update Row
         int status = db.update(TABLE_VCARD, values, where, whereArgs);
@@ -237,29 +262,4 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
         db.delete(TABLE_PROJ_MESSAGES, where, whereArgs);
         db.close(); // Closing database connection
     }*/
-}
-
-class DbBitmapUtility {
-
-    // convert from bitmap to byte array
-    public static byte[] getBytes(Bitmap bitmap) {
-        if (bitmap == null) {
-            Log.d("T1", "getBytes: bitmap is null");
-            return null;
-        }
-
-        Log.d("T1", "getBytes: bitmap is not null");
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-        return stream.toByteArray();
-    }
-
-    // convert from byte array to bitmap
-    public static Bitmap getImage(byte[] image) {
-        if(image ==null){
-            Log.d("T1", "getImage: bytes is null");
-        }
-        Log.d("T1", "getImage: bytes is not null");
-        return BitmapFactory.decodeByteArray(image, 0, image.length);
-    }
 }

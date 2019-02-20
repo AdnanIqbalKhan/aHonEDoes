@@ -1,8 +1,5 @@
 package chefcharlesmich.smartappphonebook.VcardProgram;
 
-import android.app.ProgressDialog;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -12,11 +9,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -24,17 +19,10 @@ import android.widget.Toast;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import chefcharlesmich.smartappphonebook.R;
 
@@ -78,11 +66,6 @@ public class AboutYouActivity extends AppCompatActivity {
         picture = findViewById(R.id.imageBtnPerson);
         pictureurl = description; // TODO
 
-//        Bitmap bitmap = ((BitmapDrawable)picture.getDrawable()).getBitmap();
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-//        byte[] byteArray = outputStream.toByteArray();
-
 
         (findViewById(R.id.button_pick_contact)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +82,10 @@ public class AboutYouActivity extends AppCompatActivity {
             Toast.makeText(AboutYouActivity.this, Integer.toString(vcardid), Toast.LENGTH_LONG).show();
             if (vcardid != -1) {
                 VCardMide got = mdb.getVCardById(vcardid);
+
+                Log.d(TAG, "onCreate: before " + got.pic_link);
+
+                got.loadImage();
                 companyname.setText(got.company_name);
                 name.setText(got.name);
                 title.setText(got.title);
@@ -113,11 +100,9 @@ public class AboutYouActivity extends AppCompatActivity {
                 weblink1.setText(got.weblink1);
                 weblink2.setText(got.weblink2);
                 if (got.picture != null) {
-                    Toast.makeText(AboutYouActivity.this, "load Image from DB", Toast.LENGTH_SHORT).show();
                     picture.setBackground(new BitmapDrawable(getResources(), got.picture));
-                }
-                else {
-                    Toast.makeText(AboutYouActivity.this,"load Image Error",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(AboutYouActivity.this, "load Image Error", Toast.LENGTH_SHORT).show();
                     picture.setBackground(getResources().getDrawable(R.drawable.ic_person));
                 }
             }
@@ -126,25 +111,24 @@ public class AboutYouActivity extends AppCompatActivity {
         (findViewById(R.id.btnAddContact)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                VCardMide card = new VCardMide(vcardid,
+                        companyname.getText().toString(), name.getText().toString(),
+                        title.getText().toString(), address.getText().toString(), phone.getText().toString(),
+                        email.getText().toString(), description.getText().toString(), birthday.getText().toString(),
+                        website.getText().toString(), industry.getText().toString(), social1.getText().toString(),
+                        social2.getText().toString(), weblink1.getText().toString(), weblink2.getText().toString(),
+                        "File_" + new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()) + ".png",
+                        "", ((BitmapDrawable) picture.getBackground()).getBitmap());
                 if (!extras_recieved || vcardid == -1) {
-                    mdb.addVcardIfo(new VCardMide(0,
-                            companyname.getText().toString(), name.getText().toString(),
-                            title.getText().toString(), address.getText().toString(), phone.getText().toString(),
-                            email.getText().toString(), description.getText().toString(), birthday.getText().toString(),
-                            website.getText().toString(), industry.getText().toString(), social1.getText().toString(),
-                            social2.getText().toString(), weblink1.getText().toString(), weblink2.getText().toString(),
-                            pictureurl.getText().toString(), "", ((BitmapDrawable) picture.getBackground()).getBitmap()));
-                    Toast.makeText(AboutYouActivity.this, "All Info is saved to the app1", Toast.LENGTH_SHORT).show();
+                    card.id = 0;
+                    mdb.addVcardIfo(card);
                 } else {
-                    mdb.updateVcard(new VCardMide(vcardid,
-                            companyname.getText().toString(), name.getText().toString(),
-                            title.getText().toString(), address.getText().toString(), phone.getText().toString(),
-                            email.getText().toString(), description.getText().toString(), birthday.getText().toString(),
-                            website.getText().toString(), industry.getText().toString(), social1.getText().toString(),
-                            social2.getText().toString(), weblink1.getText().toString(), weblink2.getText().toString(),
-                            pictureurl.getText().toString(), "", ((BitmapDrawable) picture.getBackground()).getBitmap()));
-                    Toast.makeText(AboutYouActivity.this, "All Info Updated to the app", Toast.LENGTH_SHORT).show();
+                    VCardMide got = mdb.getVCardById(vcardid);
+                    card.pic_link = got.pic_link;
+                    mdb.updateVcard(card);
                 }
+                card.saveImage();
+                Toast.makeText(AboutYouActivity.this, "All Info Updated to the app", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(AboutYouActivity.this, MainActivityVcard.class));
                 finish();
             }
@@ -199,17 +183,12 @@ public class AboutYouActivity extends AppCompatActivity {
             try {
                 is = this.getContentResolver().openInputStream(resultUri);
                 BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 10;
                 Bitmap preview_bitmap = BitmapFactory.decodeStream(is, null, options);
-
                 icon = new BitmapDrawable(getResources(), preview_bitmap);
-
             } catch (FileNotFoundException e) {
                 icon = getResources().getDrawable(R.drawable.ic_person);
             }
-
             picture.setBackground(icon);
-
         } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
             Toast.makeText(AboutYouActivity.this, "Failed", Toast.LENGTH_SHORT).show();
         }
@@ -224,18 +203,15 @@ public class AboutYouActivity extends AppCompatActivity {
         if (cursorID.moveToFirst()) {
             contactID = cursorID.getString(cursorID.getColumnIndex(ContactsContract.Contacts._ID));
             String abc = cursorID.getString(cursorID.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-
             Log.d(TAG, "Contact Name from Pick: " + abc);
         }
         cursorID.close();
         Log.d(TAG, "Contact ID from Pick: " + contactID);
-
         Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 null,
                 ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
                 new String[]{contactID},
                 null);
-
 
         VCardMide card = null;
         if (cursor.moveToFirst()) {
@@ -250,10 +226,8 @@ public class AboutYouActivity extends AppCompatActivity {
 
             card = new VCardMide(0, companyName, contactName, title, contactAddress, phoneNumber,
                     contactEmail, "", "", contactWebsite, "", "", "", "",
-                    "", department,
+                    "", "",
                     "", null);
-
-
             Log.d(TAG, "Contact Pick: " + card.toString());
         }
         cursor.close();

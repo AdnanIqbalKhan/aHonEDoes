@@ -1,11 +1,15 @@
 package chefcharlesmich.smartappphonebook.VcardProgram;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+import android.util.Log;
 
-import chefcharlesmich.smartappphonebook.R;
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class VCardMide {
+    private static final String TAG = "T1";
     public int id;
     public String company_name, name, title, address, phone, email, description, birthday, website,
             industry, social1, social2, weblink1, weblink2, pic_link, vcf_path;
@@ -31,9 +35,38 @@ public class VCardMide {
         this.social2 = social2;
         this.weblink1 = weblink1;
         this.weblink2 = weblink2;
-        this.pic_link = pic_link;
+
         this.vcf_path = vcf_path;
         this.picture = picture;
+        this.pic_link = pic_link;
+
+        Log.d(TAG, "VCardMide: on creation " + pic_link);
+    }
+
+    public void saveImage() {
+        File sd = Environment.getExternalStorageDirectory();
+        File dest = new File(sd, this.pic_link);
+        try {
+            FileOutputStream out = new FileOutputStream(dest);
+            this.picture.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+            out.close();
+            Log.d(TAG, "saveImage: image file saved at " + this.pic_link);
+        } catch (Exception e) {
+            Log.d(TAG, "saveImage: Error in saving file at " + this.pic_link);
+            e.printStackTrace();
+        }
+    }
+
+    public void loadImage() {
+        String filename = this.pic_link;
+        File sd = Environment.getExternalStorageDirectory();
+        File imgFile = new File(sd, filename);
+        if (imgFile.exists()) {
+            Log.d(TAG, "loadImage: image file loaded successfully " + this.pic_link);
+            this.picture = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+        } else
+            Log.d(TAG, "loadImage: image file not found");
     }
 
     @Override

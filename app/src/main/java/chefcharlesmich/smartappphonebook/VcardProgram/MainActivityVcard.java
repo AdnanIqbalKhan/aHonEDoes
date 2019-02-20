@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -84,8 +85,8 @@ public class MainActivityVcard extends AppCompatActivity {
                 if (mList.size() < MAX_CONTACT_LIMIT || MAX_CONTACT_LIMIT == 0) {
                     mList.add(new VCardMide(-1, "", "", "",
                             "", "", "", "", "", "", "",
-                            "", "", "", "", "","",null));
-                                        updateUI(true);
+                            "", "", "", "", "", "", null));
+                    updateUI(true);
                 } else {
                     Toast.makeText(MainActivityVcard.this, "Max Contacts Allowed " + MAX_CONTACT_LIMIT, Toast.LENGTH_SHORT).show();
                 }
@@ -371,7 +372,12 @@ VCF_PATH = "vcf_path";
                                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int whichButton) {
                                         if (mdb.deleteVCardByID(card.id)) {
-                                            Toast.makeText(View.getContext(), "Contact deleted", Toast.LENGTH_SHORT).show();
+                                            File sd = Environment.getExternalStorageDirectory();
+                                            File file = new File(sd, card.pic_link);
+                                            if (file.delete()) {
+                                                Toast.makeText(View.getContext(), "Contact deleted", Toast.LENGTH_SHORT).show();
+                                            } else
+                                                Toast.makeText(View.getContext(), "Error Occur", Toast.LENGTH_SHORT).show();
                                         } else {
                                             Toast.makeText(View.getContext(), "Error Occur", Toast.LENGTH_SHORT).show();
                                         }

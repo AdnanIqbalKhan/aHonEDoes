@@ -237,7 +237,7 @@ class ContactData {
     }
 
     public VCardMide getcontact() {
-        return new VCardMide(0, "", getName(), "", "", getNumber(),
+        return new VCardMide(0, "", getName(), "", getAddress(), getNumber(),
                 getEmail(), "", getBirthdate(), "", "", "", "", "", ""
                 , "", "", getPhoto());
     }
@@ -335,5 +335,32 @@ class ContactData {
         }
         cursor.close();
         return birthdate;
+    }
+
+    private String getAddress() {
+        String address = null;
+        Cursor cursor = context.getContentResolver().query(
+                ContactsContract.Data.CONTENT_URI,
+                new String[]{
+                        ContactsContract.CommonDataKinds.StructuredPostal.STREET,
+                        ContactsContract.CommonDataKinds.StructuredPostal.CITY,
+                        ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY
+                },
+                ContactsContract.Data.CONTACT_ID + " = " + contactID,
+                null,
+                null);
+
+        while (cursor.moveToNext()) {
+            String Strt = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET));
+            String Cty = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY));
+            String cntry = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
+
+            if (Strt != null || Cty != null || cntry != null) {
+                address = Strt + " " + Cty + " " + cntry;
+            }
+        }
+
+        cursor.close();
+        return address;
     }
 }

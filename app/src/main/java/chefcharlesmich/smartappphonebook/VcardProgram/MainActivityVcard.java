@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -147,74 +148,23 @@ public class MainActivityVcard extends AppCompatActivity {
             fw.write("BEGIN:VCARD\r\n");
             fw.write("VERSION:3.0\r\n");
 
-//            String name = mvCard.name;// = ((EditText) v.findViewById(R.id.editText5)).getText().toString();
-//            String phone = mvCard.phone;// = ((EditText) v.findViewById(R.id.editText6)).getText().toString();
-//            String email = mvCard.email;// = ((EditText) v.findViewById(R.id.editText7)).getText().toString();
-//            String address = mvCard.address;// = ((EditText) v.findViewById(R.id.editText8)).getText().toString();
-//            String bday = mvCard.birthday;// = ((EditText) v.findViewById(R.id.editText9)).getText().toString();
-//            String org = mvCard.company_name;// = ((EditText) v.findViewById(R.id.editText10)).getText().toString();
-//            String title = mvCard.title;// = ((EditText) v.findViewById(R.id.editText10)).getText().toString();
-//            String website = mvCard.website;
-//            String note = mvCard.info;
-//            String social1 = mvCard.social1;
-//            String social2 = mvCard.social2;
-//            String blog = mvCard.blog;
-//            String pic_link = mvCard.pic_link;
+            fw.write("N:" + mvCard.name + ";\r\n");
+            fw.write("FN:" + mvCard.name + " \r\n");
+            fw.write("ORG:" + mvCard.company_name + "\r\n");
+            fw.write("TITLE:" + mvCard.title + "\r\n");
 
-//            fw.write("N:" + name + ";" + name + "\r\n");
-//            fw.write("FN:" + name + " " + name + "\r\n");
-
-            /*fw.write("N:" + name + ";\r\n");
-            fw.write("FN:" + name + " \r\n");
-            fw.write("ORG:" + org + "\r\n");
-//                        fw.write("TITLE:" + p.getTitle() + "\r\n");
-            fw.write("TITLE:" + title + "\r\n");
-            fw.write("TEL;TYPE=WORK,VOICE:" + phone + "\r\n");
-            fw.write("ADR;TYPE=WORK:;;" + address + "\r\n");
-            fw.write("NOTE:" + note + "\r\n");
-            fw.write("URL;type=pref:" + website + "\r\n");
-            fw.write("URL:" + social1 + "\r\n");
-            fw.write("URL:" + social2 + "\r\n");
-            fw.write("URL:" + blog + "\r\n");
-            fw.write("URL:" + pic_link + "\r\n");
+            fw.write("TEL;TYPE=WORK,VOICE:" + mvCard.phone + "\r\n");
+            fw.write("ADR;TYPE=WORK:;;" + mvCard.address + "\r\n");
+            fw.write("NOTE:" + mvCard.description + "\r\n");
+            fw.write("URL;type=pref:" + mvCard.website + "\r\n");
+            fw.write("URL:" + mvCard.social1 + "\r\n");
+            fw.write("URL:" + mvCard.social2 + "\r\n");
+            fw.write("URL:" + mvCard.weblink1 + "\r\n");
+            fw.write("URL:" + mvCard.weblink2 + "\r\n");
+            fw.write("URL:" + mvCard.pic_link + "\r\n");
             fw.write("VCF_PATH=" + vcfFile.getAbsolutePath() + "\r\n ");
-            fw.write("EMAIL;" + email + "\r\n");
-            fw.write("BDAY:" + bday + "\r\n");*/
-
-//            fw.write("N:" + name + ";\r\n");
-//            fw.write("FN:" + name + " \r\n");
-//            fw.write("ORG:" + org + "\r\n");
-//            fw.write("TITLE:" + title + "\r\n");
-//            fw.write("TEL;TYPE=WORK,VOICE:" + phone + "\r\n");
-//            fw.write("ADR;TYPE=WORK:;;" + address + "\r\n");
-//            fw.write("NOTE:" + note + "\r\n");
-//            fw.write("item1.URL:" + website + "\r\n");
-//            fw.write("item2.URL:" + social1 + "\r\n");
-//            fw.write("item3.URL:" + social2 + "\r\n");
-//            fw.write("item4.URL:" + blog + "\r\n");
-//            fw.write("item5.URL:" + pic_link + "\r\n");
-////            fw.write("PHOTO;VALUE=URI;TYPE=JPG:http://www.chefcharlesmichael.com/chefpic" + "\r\n");
-//
-//            fw.write("VCF_PATH=" + mvCard.vcf_path + "\r\n ");
-//            fw.write("EMAIL;TYPE=PREF,INTERNET:" + email + "\r\n");
-//            fw.write("BDAY:" + bday + "\r\n");
-
-            /*fw.write("URL;TYPE=PREF:" + website + "\r\n ");
-
-            fw.write("URL;type=pref:" + mvCard.social1 + "\r\n ");
-//            fw.write("URL;type=pref:=SOCIAL1=" + mvCard.social1 + "\r\n ");
-            fw.write("URL;type=pref:" + mvCard.social2 + "\r\n ");
-//            fw.write("URL;type=pref:=SOCIAL2=" + mvCard.social2 + "\r\n ");
-            fw.write("URL;type=pref:" + mvCard.blog + "\r\n ");//=BLOG=
-            fw.write("item5.URL:" + mvCard.pic_link + "\r\n");
-//            fw.write("PHOTO;TYPE=JPEG;VALUE=URI:" + mvCard.pic_link + "\r\n");
-//            fw.write("PHOTO;VALUE=URI:=PICTURE_LINK=" + mvCard.pic_link + "\r\n ");
-//            fw.write("VCF_PATH=" + mvCard.vcf_path + "\r\n ");
-            fw.write("VCF_PATH=" + vcfFile.getAbsolutePath() + "\r\n ");
-//                        fw.write("ADR;TYPE=WORK:;;" + p.getStreet() + ";" + p.getCity() + ";" + p.getState() + ";" + p.getPostcode() + ";" + p.getCountry() + "\r\n");
-            fw.write("EMAIL;TYPE=PREF,INTERNET:" + email + "\r\n");
-            fw.write("BDAY:" + bday + "\r\n");*/
-
+            fw.write("EMAIL;" + mvCard.email + "\r\n");
+            fw.write("BDAY:" + mvCard.birthday + "\r\n");
             fw.write("END:VCARD\r\n");
             fw.close();
 
@@ -240,9 +190,11 @@ VCF_PATH = "vcf_path";
 
             */
 
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+
             Intent sendIntent = new Intent(Intent.ACTION_SEND);
-//            sendIntent.putExtra("sms_body", "some text");
-//            sendIntent.putExtra("address", "2146907715");
+
             sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(vcfFile));
             sendIntent.setType("text/x-vcard");
             startActivity(sendIntent);

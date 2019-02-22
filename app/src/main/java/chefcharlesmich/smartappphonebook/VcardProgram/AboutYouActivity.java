@@ -1,6 +1,5 @@
 package chefcharlesmich.smartappphonebook.VcardProgram;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -12,13 +11,11 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -30,7 +27,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import chefcharlesmich.smartappphonebook.Models.Contact;
 import chefcharlesmich.smartappphonebook.R;
 
 
@@ -88,7 +84,6 @@ public class AboutYouActivity extends AppCompatActivity {
         if (getIntent().getExtras() != null) {
             extras_recieved = true;
             vcardid = getIntent().getExtras().getInt("vcardidpassed");
-            Toast.makeText(AboutYouActivity.this, Integer.toString(vcardid), Toast.LENGTH_LONG).show();
             if (vcardid != -1) {
                 VCardMide got = mdb.getVCardById(vcardid);
 
@@ -156,12 +151,9 @@ public class AboutYouActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_PICK_CONTACTS && resultCode == RESULT_OK) {
-            Toast.makeText(AboutYouActivity.this, "Inside IF ", Toast.LENGTH_SHORT).show();
             VCardMide card = retrieveContact(data.getData());
 
             if (card != null) {
-                Toast.makeText(AboutYouActivity.this, "Card is not null", Toast.LENGTH_SHORT).show();
-                Toast.makeText(AboutYouActivity.this, card.toString(), Toast.LENGTH_SHORT).show();
                 name.setText(card.name);
                 phone.setText(card.phone);
                 email.setText(card.email);

@@ -3,13 +3,11 @@ package chefcharlesmich.smartappphonebook.VcardProgram;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
 public class VCardMide {
-    private static final String TAG = "T1";
     public int id;
     public String company_name, name, title, address, phone, email, description, birthday, website,
             industry, social1, social2, weblink1, weblink2, pic_link, vcf_path;

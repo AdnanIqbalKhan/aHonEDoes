@@ -2,9 +2,12 @@ package chefcharlesmich.smartappphonebook.VcardProgram;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,9 +40,12 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -227,20 +234,22 @@ public class MainActivityVcard extends AppCompatActivity {
 
             fw.write("N:" + mvCard.name + ";\r\n");
             fw.write("FN:" + mvCard.name + " \r\n");
-            fw.write("ORG:" + mvCard.company_name + "\r\n");
+            fw.write("ORG:" + mvCard.company_name + ";\r\n");
             fw.write("TITLE:" + mvCard.title + "\r\n");
 
-            fw.write("TEL;TYPE=WORK,VOICE:" + mvCard.phone + "\r\n");
+            fw.write("TEL;TYPE=WORK:" + mvCard.phone + "\r\n");
             fw.write("ADR;TYPE=WORK:;;" + mvCard.address + "\r\n");
-            fw.write("NOTE:" + mvCard.description + "\r\n");
-            fw.write("URL;type=pref:" + mvCard.website + "\r\n");
-            fw.write("URL:" + mvCard.social1 + "\r\n");
-            fw.write("URL:" + mvCard.social2 + "\r\n");
-            fw.write("URL:" + mvCard.weblink1 + "\r\n");
-            fw.write("URL:" + mvCard.weblink2 + "\r\n");
-            fw.write("URL:" + mvCard.pic_link + "\r\n");
-            fw.write("VCF_PATH=" + vcfFile.getAbsolutePath() + "\r\n ");
-            fw.write("EMAIL;" + mvCard.email + "\r\n");
+
+            fw.write("item3.URL;type=pref:" + mvCard.website + "\r\n");
+            fw.write("item4.URL;type=pref:" + mvCard.social1 + "\r\n");
+            fw.write("item5.URL;type=pref:" + mvCard.social2 + "\r\n");
+            fw.write("item6.URL;type=pref:" + mvCard.weblink1 + "\r\n");
+            fw.write("item7.URL;type=pref:" + mvCard.weblink2 + "\r\n");
+            fw.write("item8.URL;type=pref:" + mvCard.pic_link + "\r\n");
+
+            fw.write("PHOTO;ENCODING=B;TYPE=JPEG: ," + convertPhotoToBase64(mvCard.picture) + "\r\n");
+
+            fw.write("EMAIL;type=INTERNET;type=WORK;type=" + mvCard.email + "\r\n");
             fw.write("BDAY:" + mvCard.birthday + "\r\n");
             fw.write("END:VCARD\r\n");
             fw.close();
@@ -375,6 +384,7 @@ VCF_PATH = "vcf_path";
                 companyName.setText(card.company_name);
                 personName.setText(card.name);
                 phoneNumber.setText(card.phone);
+                card.loadImage();
 
                 edit.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -451,5 +461,16 @@ VCF_PATH = "vcf_path";
         public int getItemCount() {
             return mDataset.size();
         }
+    }
+
+
+    private String convertPhotoToBase64(Bitmap photo) {
+        if (photo != null) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            photo.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            byte[] bitmapData = bos.toByteArray();
+            return Base64.encodeToString(bitmapData, Base64.DEFAULT).replaceAll("\n", "");
+        }
+        return "";
     }
 }

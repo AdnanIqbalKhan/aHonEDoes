@@ -2,12 +2,10 @@ package chefcharlesmich.smartappphonebook.VcardProgram;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,10 +40,8 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -223,7 +219,7 @@ public class MainActivityVcard extends AppCompatActivity {
     }
 
     void sendVcard(VCardMide mvCard) {
-        File vcfFile = new File(this.getExternalFilesDir(null), mvCard.company_name.replace(" ", "_") + ".vcf");
+        File vcfFile = new File(this.getExternalFilesDir(null), mvCard.name.replace(" ", "_") + ".vcf");
         if (vcfFile.exists())
             vcfFile.delete();
         FileWriter fw = null;
@@ -245,11 +241,11 @@ public class MainActivityVcard extends AppCompatActivity {
             fw.write("item5.URL;type=pref:" + mvCard.social2 + "\r\n");
             fw.write("item6.URL;type=pref:" + mvCard.weblink1 + "\r\n");
             fw.write("item7.URL;type=pref:" + mvCard.weblink2 + "\r\n");
-            fw.write("item8.URL;type=pref:" + mvCard.pic_link + "\r\n");
+//            fw.write("item8.URL;type=pref:" + mvCard.pic_link + "\r\n");
 
             fw.write("PHOTO;ENCODING=B;TYPE=JPEG: ," + convertPhotoToBase64(mvCard.picture) + "\r\n");
 
-            fw.write("EMAIL;type=INTERNET;type=WORK;type=" + mvCard.email + "\r\n");
+            fw.write("EMAIL;type=INTERNET;type=WORK;type=pref:" + mvCard.email + "\r\n");
             fw.write("BDAY:" + mvCard.birthday + "\r\n");
             fw.write("END:VCARD\r\n");
             fw.close();

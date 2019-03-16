@@ -176,8 +176,6 @@ public class DBHandlerVcard extends SQLiteOpenHelper {
     }
 
     public int updateVcard(VCardMide vCard) {
-        Log.d(TAG, "updateVcard: " + vCard.pic_link);
-
         String where = KEY_ID + "=?";
         String[] whereArgs = new String[]{vCard.id + ""};
 

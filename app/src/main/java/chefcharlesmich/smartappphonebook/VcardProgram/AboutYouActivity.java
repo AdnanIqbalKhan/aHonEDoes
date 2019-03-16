@@ -33,12 +33,12 @@ import chefcharlesmich.smartappphonebook.R;
 public class AboutYouActivity extends AppCompatActivity {
 
     private static final String TAG = "T1";
-    EditText companyname, name, title, address, phone, email, birthday, website, industry, social1, social2, description, weblink1, weblink2, pictureurl;
+    EditText companyname, name, title, address, phone, email, birthday, website, industry, social1,
+            social2, description, weblink1, weblink2;
     private ImageButton picture;
     DBHandlerVcard mdb;
     int vcardid;
     boolean extras_recieved = false;
-
 
     int REQUEST_CODE_PICK_CONTACTS = 2;
 
@@ -69,7 +69,6 @@ public class AboutYouActivity extends AppCompatActivity {
 
 
         picture = findViewById(R.id.imageBtnPerson);
-        pictureurl = description; // TODO
 
 
         (findViewById(R.id.button_pick_contact)).setOnClickListener(new View.OnClickListener() {
@@ -101,6 +100,7 @@ public class AboutYouActivity extends AppCompatActivity {
                 social2.setText(got.social2);
                 weblink1.setText(got.weblink1);
                 weblink2.setText(got.weblink2);
+                description.setText(got.description);
                 if (got.picture != null) {
                     picture.setBackground(new BitmapDrawable(getResources(), got.picture));
                 } else {
@@ -230,7 +230,8 @@ class ContactData {
 
     public VCardMide getcontact() {
         return new VCardMide(0, getCompanyName(), getName(), getTitle(), getAddress(), getNumber(),
-                getEmail(), getNote(), getBirthdate(), getWebsite(), "", "", "", "", ""
+                getEmail(), getNote(), getBirthdate(), getWebsite(0), "", getWebsite(3),
+                getWebsite(4), getWebsite(1), getWebsite(2)
                 , "", "", getPhoto());
     }
 
@@ -254,20 +255,17 @@ class ContactData {
     private String getNumber() {
         String contactNumber = null;
         // Using the contact ID now we will get contact phone number
-        Cursor cursorPhone = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+        Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactID, null, null);
 
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " +
-                        ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
-                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
-
-                new String[]{contactID},
-                null);
-
-        if (cursorPhone.moveToFirst()) {
-            contactNumber = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+        while (phones.moveToNext()) {
+            String number = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            if (number != null) {
+                contactNumber = number;
+                break;
+            }
         }
-        cursorPhone.close();
+        phones.close();
         return contactNumber;
     }
 
@@ -332,24 +330,32 @@ class ContactData {
     private String getAddress() {
         String address = null;
         Cursor cursor = context.getContentResolver().query(
-                ContactsContract.Data.CONTENT_URI,
-                new String[]{
-                        ContactsContract.CommonDataKinds.StructuredPostal.STREET,
-                        ContactsContract.CommonDataKinds.StructuredPostal.CITY,
-                        ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY
-                },
-                ContactsContract.Data.CONTACT_ID + " = " + contactID,
-                null,
-                null);
+                ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_URI, null,
+                ContactsContract.CommonDataKinds.StructuredPostal.CONTACT_ID + " = ?",
+                new String[]{contactID}, null);
 
         while (cursor.moveToNext()) {
-            String Strt = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET));
-            String Cty = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY));
-            String cntry = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
+            String street = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET));
+            String state = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.REGION));
+            String zip = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE));
+            String city = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY));
+            String country = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
 
-            if (Strt != null || Cty != null || cntry != null) {
-                address = Strt + " " + Cty + " " + cntry;
-            }
+            if (street == null)
+                street = "";
+            if (state == null)
+                state = "";
+            if (zip == null)
+                zip = "";
+            if (city == null)
+                city = "";
+            if (country == null)
+                country = "";
+            address = street + " " + state + " " + city + " " + zip + " " + country;
+            address = address.trim();
+            if (!address.equals(""))
+                break;
+
         }
 
         cursor.close();
@@ -402,9 +408,9 @@ class ContactData {
         return String.valueOf(rawContactId);
     }
 
-    private String getWebsite() {
+    private String getWebsite(int c) {
         String website = null;
-
+        int counter = 0;
         String orgWhere = ContactsContract.Data.RAW_CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
         String[] orgWhereParams = new String[]{getRawContactId(contactID),
                 ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE};
@@ -414,7 +420,11 @@ class ContactData {
         while (cursor.moveToNext()) {
             String a = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
             if (a != null) {
-                website = a;
+                if (counter == c) {
+                    website = a;
+                    break;
+                }
+                counter++;
             }
         }
         cursor.close();

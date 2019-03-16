@@ -290,7 +290,7 @@
                             android:id="@+id/editTextSocialMedia2"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:hint="Web Media 2"
+                            android:hint="Social Media 2"
                             android:inputType="textPersonName"
                             android:maxLines="5" />
                     </android.support.design.widget.TextInputLayout>
